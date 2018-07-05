@@ -15,9 +15,9 @@ return [
     // +----------------------------------------------------------------------
 
     // 应用调试模式
-    'app_debug'              => false,
+    'app_debug'              => true,
     // 应用Trace
-    'app_trace'              => false,
+    'app_trace'              => true,
     // 应用模式状态
     'app_status'             => '',
     // 是否支持多模块
@@ -236,4 +236,8 @@ return [
         'var_page'  => 'page',
         'list_rows' => 15,
     ],
+		'game_url_addCard'=>'http://112.74.161.230:8081/msh/AddArenaCard',//增加房卡地址
+		'game_key'=>'defb6dee5c4611e89c2dfa7a@!e01bbebc',//游戏对接key
+		'web_url'=>"112.74.161.230:8081",//运营服务地址
+		//'web_url'=>"101.201.234.189:8081",//测试服务器地址
 ];
