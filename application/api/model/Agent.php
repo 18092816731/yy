@@ -27,7 +27,7 @@ class Agent extends Model
 		} else {
 		   $limit = $data['limit_page'];
 		}
-		$limit = 15;//每页条数
+		//$limit = 15;//每页条数
 		$pageNum = ceil ( $totle/$limit); //总页数
 		//当前页
 		if(array_key_exists('npage', $data))
