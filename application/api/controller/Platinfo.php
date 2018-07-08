@@ -6,7 +6,7 @@
 namespace app\api\controller;
 use think\Request;
 
-class Platform 
+class Platinfo
 {
     //属性
     protected  $agent;
@@ -55,7 +55,7 @@ class Platform
      * 1-3 平台|游戏登录
      * @param Request $request
      */
-    public function platLogin(Request $request = null)
+    public function platlogin(Request $request = null)
     {
         //获取参数
         $data = $request->param();
@@ -109,5 +109,25 @@ class Platform
         //调取添加表
         $res = $this->agent->created_agent();
         return $res;
+    }
+    public function login()
+    {
+        $url = 'www.handgame.com/api/platinfo/platLogin';
+        //$url = $this->testUrl.'api/platform/plat_login';
+        $data['account'] = '666666';
+        $data['password']  = '123456';
+        $res = $this->curl_($url, $data);
+        dump($res);
+    } 
+    public function curl_($url,$data)
+    {
+        $ch = curl_init();
+        /***在这里需要注意的是，要提交的数据不能是二维数组或者更高
+         *例如array('name'=>serialize(array('tank','zhang')),'sex'=>1,'birth'=>'20101010')
+         *例如array('name'=>array('tank','zhang'),'sex'=>1,'birth'=>'20101010')这样会报错的*/
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_exec($ch);
     }
 }
