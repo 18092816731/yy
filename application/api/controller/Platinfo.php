@@ -112,10 +112,10 @@ class Platinfo
     }
     public function login()
     {
-        $url = 'www.handgame.com/api/platinfo/platLogin';
+        $url = 'http://test.91yelang.top/api/platinfo/platLogin';
         //$url = $this->testUrl.'api/platform/plat_login';
-        $data['account'] = '666666';
-        $data['password']  = '123456';
+        $data['account'] = 'xamsh001';
+        $data['password']  = 'xamsh001';
         $res = $this->curl_($url, $data);
         dump($res);
     } 
