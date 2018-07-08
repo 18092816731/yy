@@ -21,17 +21,11 @@ class Agent extends Model
 		$sqlc =  "select count(id)  from hand_agent where status = 3 ";
 		$count = db()->Query($sqlc);
 		$totle = $count[0]["count(id)"];//总数
-		if(!array_key_exists('npage', $data))
-		{
-		    $npage = 1;
-		} else {
-		    $npage = $data['npage'];
-		}
 		if(!array_key_exists('limit_page', $data))
 		{
-		   $limit_page = 15;
+		   $limit = 15;
 		} else {
-		   $limit_page = $data['limit_page'];
+		   $limit = $data['limit_page'];
 		}
 		$limit = 15;//每页条数
 		$pageNum = ceil ( $totle/$limit); //总页数
