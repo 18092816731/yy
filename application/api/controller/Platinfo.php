@@ -112,7 +112,7 @@ class Platinfo
     }
     public function login()
     {
-        $url = 'http://test.91yelang.top/api/platinfo/platLogin';
+        $url = 'http://test.91yelang.top/api/platagent/checkagentlist';
         //$url = $this->testUrl.'api/platform/plat_login';
         $data['account'] = 'xamsh001';
         $data['password']  = 'xamsh001';
