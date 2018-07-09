@@ -53,6 +53,26 @@ class AgentCard extends Model
     //曾
     public function buycardset($data)
     {
+        //编辑
+        if(array_key_exists('id',$data))
+        {
+           if(array_key_exists('card_num',$data))
+           {
+               $insert['card_num'] = $data['card_num'];
+           }
+           if(array_key_exists('fee_num',$data))
+           {
+               $insert['fee_num'] = $data['fee_num'];
+           }
+           $response =  db('buy_card_set')->where(['id'=>$data['id']])->update($insert);
+           
+           if(!$response)
+           {
+               return return_json(2,'操作失败',[],[]);
+           }
+           return return_json(1,'操作成功',$response);
+        }   
+       //新增
         //字段验证
         if(!array_key_exists('card_num',$data))
         {
