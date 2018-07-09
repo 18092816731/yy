@@ -204,9 +204,9 @@ class Agent extends Model
         //执行更新数据库
         $res = $this->where($where)->update($update);
         if($res) {
-            return  return_json(1,'审核成功');
+            return  return_json(1,'操作成功');
         } else {
-            return  return_json(2,'审核失败');
+            return  return_json(2,'操作失败');
         }
     }
     
