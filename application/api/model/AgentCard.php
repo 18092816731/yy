@@ -192,7 +192,7 @@ class AgentCard extends Model
             {
                 $insert['fee_num'] = $data['fee_num'];
             }
-            $response =  db('buy_card_set')->where(['id'=>$data['id']])->update($insert);
+            $response =  db('send_card_set')->where(['id'=>$data['id']])->update($insert);
              
             if(!$response)
             {
