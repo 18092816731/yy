@@ -52,14 +52,14 @@ class Agentinfo
      * @param Request|null $request
      * @return string
      */
-    public function agentstatus(Request $request = null)
+/*     public function agentstatus(Request $request = null)
     {
         //获取参数
         $data = $request->param();
         //调取添加表
         $res = $this->agent->getstatus($data);
         return $res;
-    }
+    } */
     /**
      * 代理申请
      * @param Request|null $request
