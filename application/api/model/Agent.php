@@ -152,7 +152,7 @@ class Agent extends Model
         $page['totle'] = $totle;//总条数
         $page['tpage'] = $pageNum;//总页数
         //开始数$start $limie
-        $sql =  "select a.wx_name,a.rname,a.phone,a.created_at,b.account as p_account from  hand_agent as a , hand_agent b ".$where."  limit ".$start.",".$limit;
+        $sql =  "select a.id,a.wx_name,a.rname,a.phone,a.created_at,b.account as p_account from  hand_agent as a , hand_agent b ".$where."  limit ".$start.",".$limit;
     
         $res = db()->Query($sql);
         if(!$res)
