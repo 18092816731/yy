@@ -7,98 +7,212 @@ use think\Cache;
 
 class Agent extends Model
 {
-	/**************************************************************************平台对代离的管理************************************************************************************/
-	/**
-	 * 待审审核代理列表
-	 * @param unknown $data
-	 * @return string
-	 */
-	public function checkagentlist($data)
-	{		
-		//分页
-		$where = ' where  a.status = 3 and a.pid = b.id';//注意下面计算页数的sql
-		//计算总页数
-		$sqlc =  "select count(id)  from hand_agent where status = 3 ";
-		$count = db()->Query($sqlc);
-		$totle = $count[0]["count(id)"];//总数
-		if(!array_key_exists('limit_page', $data))
-		{
-		   $limit = 15;
-		} else {
-		   $limit = $data['limit_page'];
-		}
-		//$limit = 15;//每页条数
-		$pageNum = ceil ( $totle/$limit); //总页数
-		//当前页
-		if(array_key_exists('npage', $data))
-		{
-			$npage = $data['npage'];
-		}else{
-			$npage = 1;
-		}
-		$start = ($npage-1)*$limit;
-		$page = [];
-		$page['npage'] = $npage;//当前页
-		$page['totle'] = $totle;//总条数
-		$page['tpage'] = $pageNum;//总页数
-		//开始数$start $limie
-		$sql =  "select a.wx_name,a.rname,a.phone,a.created_at,b.account as p_account from  hand_agent as a , hand_agent b ".$where."  limit ".$start.",".$limit;
-		
-		$res = db()->Query($sql);
-		if(!$res)
-		{
-			return return_json(1,'暂无信息 ');
-		}
-		//返回结果
-		return return_json(1,'平台发卡记录',$res,$page);	
-	}
-	/**
-	 * 完成平台对代理的审核
-	 * @param unknown $data
-	 * @return string
-	 */
-	public function  checkagent($data)
-	{
-		//获取id
-		if(!array_key_exists('id', $data))
-		{
-			return  return_json(2,'该用新增代理异常');
-		} else {
-			$where['id'] = $data['id'];
-		}
-		//获取状态 状态1为审核通过 status修改为1  状态1为审核不通过 status修改为3
-		if(!array_key_exists('status', $data))
-		{
-			return  return_json(2,'新增代理状态异常');
-		} else {
-			if($data['status'] == 1 ) {
-				$update['status'] = 1;
-			} else {
-				$update['status'] = 4;
-			}			
-		}
-		//获取拒绝原因
-		if($update['status'] == 4){
-			if(!array_key_exists('id', $data))
-			{
-				return  return_json(2,'该用新增代理异常');
-			} else {
-				$update['reject_cause'] =  $data['reject_cause'];
-			}
-		}
-		//检测看是否已经修改
-		$result = $this->where(['status' => 1,'id' => $where['id']])->find();
-		if($result){
-			return  return_json(2,'代理已审核');
-		}
-		//执行更新数据库
-		$res = $this->where($where)->update($update);
-		if($res) {
-			return  return_json(1,'审核成功');
-		} else {
-			return  return_json(2,'审核失败');
-		}		
-	}
+    /**
+     * 代理登录接口
+     * @param $data 请求数组
+     * @return string 返回参数值类型为json
+     */
+    public function login($data)
+    {
+        Log::info('调用登录接口——请求开始');
+        /*     //检测数据
+         $response = testing(['username','password','captcha']);
+         $response = json_decode($response);
+         if ($response->result_code != 200) {
+         return $response;
+         } */
+        /*     //校验验证码
+         if(!captcha_check($data['captcha'],'login')){
+         //验证失败
+         return return_json(2,'验证码输入错误');
+         }; */
+        if(!array_key_exists('account',$data))
+        {
+            return  return_json(2,'代理账号不能为空');
+        }
+        if(!array_key_exists('password',$data))
+        {
+            return  return_json(2,'代理密码不能为空');
+        }
+        $find['account'] = $data['account'];
+        $find['password'] = md5($data['password']);
+        $find['pid'] = array('neq',0);
+    
+        //查询数据
+        $response = $this->where($find)->field('id,pid,account,status,card_num,token')->find();
+         
+        if(!$response) {
+            return return_json(2,'账号或者密码有误,请重试');
+        }
+        if($response['pid']===0)
+        {
+            return return_json(2,'账号或者密码有误,请重试');
+        }else{
+            $pidname = $this->where(['id'=>$response['pid']])->field('account')->find();
+            $response['pname'] = $pidname['account'];
+        }
+    
+        if ($response)
+        {
+            if($response['status']!=1)
+            {
+                return return_json(2,'账号异常已被禁用');
+            }
+            Log::info('调用登录接口——查询成功');
+            $insert['agent_id'] = $response['id'];
+            $insert['login_time'] = time();
+            $insert['operation'] = '用户登录';
+            $result = db('agent_log')->insert($insert);
+            if (!$result) {
+                return return_json(2,'账号或者密码有误,请重试');
+            }
+            //缓存token
+            /*       $token = md5(time().'hand_game');
+             $res = $this->where($find)->update(['token'=>$token]);
+             Cache::set('user_'.$response['id'],'123456',1800); */
+            return return_json(1,'登录成功',$response);
+        } else {
+            Log::info('调用登录接口——查询失败');
+            return return_json(2,'账号或者密码有误,请重试');
+        }
+    }
+    /**
+     * 创建代理
+     * @param unknown $data
+     * @return string
+     */
+    public function  agentcreated($data)
+    {
+        //获取id
+        if(!array_key_exists('wx_name', $data))
+        {
+            return  return_json(2,'请输入正确的微信号');
+        } else {
+            $insert['wx_name'] = $data['wx_name'];
+        }
+        if(!array_key_exists('phone', $data))
+        {
+            return  return_json(2,'电话不能为空');
+        } else {
+            $insert['phone'] = $data['phone'];
+        }
+        if(!array_key_exists('rname', $data))
+        {
+            return  return_json(2,'真实姓名不能为空');
+        } else {
+            $insert['rname'] = $data['rname'];
+        }
+        if(!array_key_exists('pid', $data))
+        {
+            return  return_json(2,'推荐码不能为空');
+        } else {
+            $insert['pid'] = $data['pid'];
+        }
+
+        //检测看是否已经修改
+        $result = $this->insert($insert);
+        if(!$result){
+            return  return_json(2,'申请失败');
+        }
+        return  return_json(1,'申请成功');
+
+    }
+    
+    /**
+     * 待审审核代理列表
+     * @param unknown $data
+     * @return string
+     */
+    public function checkagentlist($data)
+    {
+        //分页
+        $where = ' where  a.status = 3 and a.pid = b.id';//注意下面计算页数的sql
+        //计算总页数
+        $sqlc =  "select count(id)  from hand_agent where status = 3 ";
+        $count = db()->Query($sqlc);
+        $totle = $count[0]["count(id)"];//总数
+        if(!array_key_exists('limit_page', $data))
+        {
+            $limit = 15;
+        } else {
+            $limit = $data['limit_page'];
+        }
+        //$limit = 15;//每页条数
+        $pageNum = ceil ( $totle/$limit); //总页数
+        //当前页
+        if(array_key_exists('npage', $data))
+        {
+            $npage = $data['npage'];
+        }else{
+            $npage = 1;
+        }
+        $start = ($npage-1)*$limit;
+        $page = [];
+        $page['npage'] = $npage;//当前页
+        $page['totle'] = $totle;//总条数
+        $page['tpage'] = $pageNum;//总页数
+        //开始数$start $limie
+        $sql =  "select a.wx_name,a.rname,a.phone,a.created_at,b.account as p_account from  hand_agent as a , hand_agent b ".$where."  limit ".$start.",".$limit;
+    
+        $res = db()->Query($sql);
+        if(!$res)
+        {
+            return return_json(1,'暂无信息 ');
+        }
+        //返回结果
+        return return_json(1,'平台发卡记录',$res,$page);
+    }
+    /**
+     * 完成平台对代理的审核
+     * @param unknown $data
+     * @return string
+     */
+    public function  checkagent($data)
+    {
+        //获取id
+        if(!array_key_exists('id', $data))
+        {
+            return  return_json(2,'该用新增代理异常');
+        } else {
+            $where['id'] = $data['id'];
+        }
+        //获取状态 状态1为审核通过 status修改为1  状态1为审核不通过 status修改为3
+        if(!array_key_exists('status', $data))
+        {
+            return  return_json(2,'新增代理状态异常');
+        } else {
+            if($data['status'] == 1 ) {
+                $update['status'] = 1;
+            } else {
+                $update['status'] = 4;
+            }
+        }
+        //获取拒绝原因
+        if($update['status'] == 4){
+            if(!array_key_exists('id', $data))
+            {
+                return  return_json(2,'该用新增代理异常');
+            } else {
+                $update['reject_cause'] =  $data['reject_cause'];
+            }
+        }
+        //检测看是否已经修改
+        $result = $this->where(['status' => 1,'id' => $where['id']])->find();
+        if($result){
+            return  return_json(2,'代理已审核');
+        }
+        //执行更新数据库
+        $res = $this->where($where)->update($update);
+        if($res) {
+            return  return_json(1,'审核成功');
+        } else {
+            return  return_json(2,'审核失败');
+        }
+    }
+    
+	/**************************************************************************之前的************************************************************************************/
+
+
 	public function agentlist($data)
 	{
 		//分页
@@ -299,73 +413,7 @@ class Agent extends Model
         return return_json(1,'平台发卡记录',$res,$page);
     }
 
-    /**
-     * 代理登录接口
-     * @param $data 请求数组
-     * @return string 返回参数值类型为json
-     */
-    public function login($data)
-    {
-        Log::info('调用登录接口——请求开始');
-    /*     //检测数据
-        $response = testing(['username','password','captcha']);
-        $response = json_decode($response);
-        if ($response->result_code != 200) {
-            return $response;
-        } */
-    /*     //校验验证码
-        if(!captcha_check($data['captcha'],'login')){
-            //验证失败
-            return return_json(2,'验证码输入错误');
-        }; */
-        if(!array_key_exists('account',$data))
-        {
-            return  return_json(2,'代理账号不能为空');
-        }
-        if(!array_key_exists('password',$data))
-        {
-            return  return_json(2,'代理密码不能为空');
-        }
-        $find['account'] = $data['account'];
-        $find['password'] = md5($data['password']);
-        $find['pid'] = array('neq',0);
-        //查询数据
-        $response = $this->where($find)->field('id,pid,account,status,card_num,token')->find();
-        if($response) {
-        	return return_json(2,'账号或者密码有误,请重试');
-        }
-        if($response['pid']===0)
-        {
-            return return_json(2,'账号或者密码有误,请重试');
-        }else{
-            $pidname = $this->where(['id'=>$response['pid']])->field('account')->find();
-            $response['pname'] = $pidname['account'];
-        }
 
-        if ($response) 
-        {
-            if($response['status']!=1)
-            {
-                return return_json(2,'账号异常已被禁用');
-            }
-            Log::info('调用登录接口——查询成功');
-            $insert['agent_id'] = $response['id'];
-            $insert['login_time'] = time();
-            $insert['operation'] = '用户登录';
-            $result = db('agent_log')->insert($insert);
-            if (!$result) {
-                return return_json(2,'账号或者密码有误,请重试');
-            }
-            //缓存token
-      /*       $token = md5(time().'hand_game');
-            $res = $this->where($find)->update(['token'=>$token]);
-            Cache::set('user_'.$response['id'],'123456',1800); */
-            return return_json(1,'登录成功',$response);
-        } else {
-            Log::info('调用登录接口——查询失败');
-            return return_json(2,'账号或者密码有误,请重试');
-        }
-    }
     /**
      * 平台房卡数
      */

@@ -10,7 +10,7 @@ use app;
 use think\Request;
 use think\Config;
 
-class Agent
+class Agentinfo
 {
     //属性
     protected  $agent;
@@ -57,7 +57,7 @@ class Agent
         //获取参数
         $data = $request->param();
         //调取添加表
-        $res = $this->agent->login($data);
+        $res = $this->agent->agentcreated($data);
         return $res;
     }
     /**
@@ -70,7 +70,7 @@ class Agent
         //获取参数
         $data = $request->param();
         //调取添加表
-        $res = $this->agent->login($data);
+        $res = $this->userCard->buycardlist($data);
         return $res;
     }
     /**
@@ -83,7 +83,7 @@ class Agent
         //获取参数
         $data = $request->param();
         //调取添加表
-        $res = $this->agent->login($data);
+        $res = $this->userCard->buycardlist($data);
         return $res;
     }
     /**
@@ -96,7 +96,7 @@ class Agent
         //获取参数
         $data = $request->param();
         //调取添加表
-        $res = $this->agent->login($data);
+        $res = $this->userCard->sendcardlist($data);
         return $res;
     }
     /**
@@ -109,11 +109,11 @@ class Agent
         //获取参数
         $data = $request->param();
         //调取添加表
-        $res = $this->agent->login($data);
+        $res = $this->userCard->sendcard($data);
         return $res;
     }
 
-
+/*************之前代码******************/
 /*    /**
      * 1-1 新增代理账号
      * @param Request $request
