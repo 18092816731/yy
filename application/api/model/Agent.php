@@ -209,6 +209,17 @@ class Agent extends Model
             return  return_json(2,'操作失败');
         }
     }
+    public function getstatus($data)
+    {
+        if(!array_key_exists('id', $data))
+        {
+            return  return_json(2,'该用新增代理异常');
+        } else {
+            $where['id'] = $data['id'];
+        }
+        $result = $this->where(['id' => $where['id']])->find();
+        return return_json(1,'平台发卡记录',$result);
+    }
     
 	/**************************************************************************之前的************************************************************************************/
 

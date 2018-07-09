@@ -48,6 +48,19 @@ class Agentinfo
         return $res;
     }
     /**
+     * 代理登录返回状态
+     * @param Request|null $request
+     * @return string
+     */
+    public function agentstatus(Request $request = null)
+    {
+        //获取参数
+        $data = $request->param();
+        //调取添加表
+        $res = $this->agent->getstatus($data);
+        return $res;
+    }
+    /**
      * 代理申请
      * @param Request|null $request
      * @return string
