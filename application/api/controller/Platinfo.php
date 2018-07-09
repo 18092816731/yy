@@ -5,6 +5,7 @@
  */
 namespace app\api\controller;
 use think\Request;
+use app\api\model\Agent;
 
 class Platinfo
 {
@@ -19,10 +20,140 @@ class Platinfo
         $this->agent = new \app\api\model\Agent();
         $this->userCard  = new \app\api\model\AgentCard();
     }
+
+
+    /**
+     * 平台等录
+     * @param Request|null $request
+     * @return string
+     */
+    public function platlogin(Request $request = null)
+    {
+        //获取参数
+        $data = $request->param();
+        //调取添加表
+        $res = $this->agent->login_plat($data,1);
+        return $res;
+    }
+    /**
+     * 平台退出
+     * @param Request|null $request
+     * @return string
+     */
+    public function loginout(Request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->agent->plat_loginout($date);
+        return $res;
+    }
+/*****************************购卡设计**************************************/
+    /**
+     * 购卡设置列表
+     * @param Request|null $request
+     * @return string
+     */
+    public function buycardlist(Request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->userCard->buycardlist($date);
+        return $res;
+    }
+    /**
+     * 购卡设置
+     * @param Request|null $request
+     * @return string
+     */
+    public function buycardset(Request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->userCard ->buycardset($date);
+        return $res;
+    }
+    /**
+     * 购卡设置编辑
+     * @param Request|null $request
+     * @return string
+     */
+    public function buycardedit(Request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->userCard ->buycardedit($date);
+        return $res;
+    }
+    /**
+     * 购卡设置删除
+     * @param Request|null $request
+     * @return string
+     */
+    public function buycarddel(Request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->userCard ->buycarddel($date);
+        return $res;
+    }
+    /*****************************发卡设计**************************************/
+    /**
+     * 购卡设置列表
+     * @param Request|null $request
+     * @return string
+     */
+    public function sendcardlist(Request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->userCard->sendcardlist($date);
+        return $res;
+    }
+    /**
+     * 购卡设置
+     * @param Request|null $request
+     * @return string
+     */
+    public function sendcardset(Request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->userCard ->sendcardset($date);
+        return $res;
+    }
+    /**
+     * 购卡设置编辑
+     * @param Request|null $request
+     * @return string
+     */
+    public function sendcardedit(Request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->userCard ->sendcardedit($date);
+        return $res;
+    }
+    /**
+     * 购卡设置删除
+     * @param Request|null $request
+     * @return string
+     */
+    public function sendcarddel(Request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->userCard ->sendcarddel($date);
+        return $res;
+    }
+
+
+/*************之前***************/
+
     /**
      * 1-1 新增平台|游戏账号
      * @param Request $request
      */
+
     public function platCreated(Request $request = null)
     {
         //获取参数
@@ -32,13 +163,8 @@ class Platinfo
         $res = $this->agent->created_agent($date);
         return $res;
     }
-    public function loginout(Request $request = null)
-    {
-        $date = $request->param();
-        //调取添加表
-        $res = $this->agent->plat_loginout($date);
-        return $res;
-    }
+
+
     /**
      * 1-2 平台|游戏账号信息修改
      * @param Request $request
@@ -51,18 +177,7 @@ class Platinfo
         return $res;
     }*/
     
-    /**
-     * 1-3 平台|游戏登录
-     * @param Request $request
-     */
-    public function platlogin(Request $request = null)
-    {
-        //获取参数
-        $data = $request->param();
-        //调取添加表
-        $res = $this->agent->login_plat($data,1);
-        return $res;
-    }
+
     /**
      * 2-1 平台|游戏发房卡
      * @param Request $request

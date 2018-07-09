@@ -9,6 +9,221 @@ use think\Config;
 
 class AgentCard extends Model
 {
+    /*******************购卡设置********************************/
+    /**
+     * 购卡设置列表
+     * @param $data
+     * @return string
+     */
+    public function buycardlist($data)
+    {
+        //分页
+
+        //计算总页数
+        $sqlc =  "select count(id)  from hand_buy_card_set  ";
+        $count = db()->Query($sqlc);
+        $totle = $count[0]["count(id)"];//总数
+        if(!array_key_exists('limit_page', $data))
+        {
+            $limit = 15;
+        } else {
+            $limit = $data['limit_page'];
+        }
+        //$limit = 15;//每页条数
+        $pageNum = ceil ( $totle/$limit); //总页数
+        //当前页
+        if(array_key_exists('npage', $data))
+        {
+            $npage = $data['npage'];
+        }else{
+            $npage = 1;
+        }
+        $start = ($npage-1)*$limit;
+        $page = [];
+        $page['npage'] = $npage;//当前页
+        $page['totle'] = $totle;//总条数
+        $page['tpage'] = $pageNum;//总页数
+        $response =  db('buy_card_set')->select();
+        if(!$response)
+        {
+            return return_json(2,'操作失败',[],[]);
+        }
+        return return_json(1,'操作成功',$response,$page);
+    }
+    //曾
+    public function buycardset($data)
+    {
+        //字段验证
+        if(!array_key_exists('card_num',$data))
+        {
+            return  return_json(2,'房卡数不能为空');
+        } else {
+            $insert['card_num'] = $data['card_num'];
+        }
+        if(!array_key_exists('fee_num',$data))
+        {
+            return  return_json(2,'金额不能为空');
+        } else {
+            $insert['fee_num'] = $data['fee_num'];
+        }
+
+        $response =  db('buy_card_set')->insert($insert);
+
+        if(!$response)
+        {
+            return return_json(2,'操作失败',[],[]);
+        }
+        return return_json(1,'操作成功',$response);
+    }
+    //改
+    public function buycardedit($data)
+    {
+        //字段验证edit
+        if(!array_key_exists('id',$data))
+        {
+            return  return_json(2,'参数异常');
+        }
+        if(array_key_exists('card_num',$data))
+        {
+            $insert['card_num'] = $data['card_num'];
+        }
+        if(array_key_exists('fee_num',$data))
+        {
+            $insert['fee_num'] = $data['fee_num'];
+        }
+        $response =  db('buy_card_set')->where(['id'=>$data['id']])->update($insert);
+
+        if(!$response)
+        {
+            return return_json(2,'操作失败',[],[]);
+        }
+        return return_json(1,'操作成功',$response);
+    }
+
+    //删
+    public function buycarddel($data)
+    {
+        //字段验证edit
+        if(!array_key_exists('id',$data))
+        {
+            return  return_json(2,'参数异常');
+        }
+        $response =  db('buy_card_set')->where(['id'=>$data['id']])->delete();
+
+        if(!$response)
+        {
+            return return_json(2,'操作失败',[],[]);
+        }
+        return return_json(1,'操作成功',$response);
+    }
+    /*******************发卡设置********************************/
+    /**
+     * 购卡设置列表
+     * @param $data
+     * @return string
+     */
+    public function sendcardlist($data)
+    {
+        //分页
+
+        //计算总页数
+        $sqlc =  "select count(id)  from hand_send_card_set  ";
+        $count = db()->Query($sqlc);
+        $totle = $count[0]["count(id)"];//总数
+        if(!array_key_exists('limit_page', $data))
+        {
+            $limit = 15;
+        } else {
+            $limit = $data['limit_page'];
+        }
+        //$limit = 15;//每页条数
+        $pageNum = ceil ( $totle/$limit); //总页数
+        //当前页
+        if(array_key_exists('npage', $data))
+        {
+            $npage = $data['npage'];
+        }else{
+            $npage = 1;
+        }
+        $start = ($npage-1)*$limit;
+        $page = [];
+        $page['npage'] = $npage;//当前页
+        $page['totle'] = $totle;//总条数
+        $page['tpage'] = $pageNum;//总页数
+        $response =  db('send_card_set')->select();
+        if(!$response)
+        {
+            return return_json(2,'操作失败',[],[]);
+        }
+        return return_json(1,'操作成功',$response,$page);
+    }
+    //曾
+    public function sendcardset($data)
+    {
+        //字段验证
+        if(!array_key_exists('card_num',$data))
+        {
+            return  return_json(2,'房卡数不能为空');
+        } else {
+            $insert['card_num'] = $data['card_num'];
+        }
+        if(!array_key_exists('fee_num',$data))
+        {
+            return  return_json(2,'金额不能为空');
+        } else {
+            $insert['fee_num'] = $data['fee_num'];
+        }
+
+        $response =  db('send_card_set')->insert($insert);
+
+        if(!$response)
+        {
+            return return_json(2,'操作失败',[],[]);
+        }
+        return return_json(1,'操作成功',$response);
+    }
+    //改
+    public function sendcardedit($data)
+    {
+        //字段验证edit
+        if(!array_key_exists('id',$data))
+        {
+            return  return_json(2,'参数异常');
+        }
+        if(array_key_exists('card_num',$data))
+        {
+            $insert['card_num'] = $data['card_num'];
+        }
+        if(array_key_exists('fee_num',$data))
+        {
+            $insert['fee_num'] = $data['fee_num'];
+        }
+        $response =  db('send_card_set')->where(['id'=>$data['id']])->update($insert);
+
+        if(!$response)
+        {
+            return return_json(2,'操作失败',[],[]);
+        }
+        return return_json(1,'操作成功',$response);
+    }
+
+    //删
+    public function sendcarddel($data)
+    {
+        //字段验证edit
+        if(!array_key_exists('id',$data))
+        {
+            return  return_json(2,'参数异常');
+        }
+        $response =  db('send_card_set')->where(['id'=>$data['id']])->delete();
+
+        if(!$response)
+        {
+            return return_json(2,'操作失败',[],[]);
+        }
+        return return_json(1,'操作成功',$response);
+    }
+    /*******之前的************/
     /**
      * 执行发房卡 
      * @param unknown $data

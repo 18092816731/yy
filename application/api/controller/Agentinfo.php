@@ -33,11 +33,92 @@ class Agent
         } */
         
     }
+
     /**
+     * 代理登录
+     * @param Request|null $request
+     * @return string
+     */
+    public function agentLogin(Request $request = null)
+    {
+        //获取参数
+        $data = $request->param();
+        //调取添加表
+        $res = $this->agent->login($data);
+        return $res;
+    }
+    /**
+     * 代理申请
+     * @param Request|null $request
+     * @return string
+     */
+    public function agentcreated(Request $request = null)
+    {
+        //获取参数
+        $data = $request->param();
+        //调取添加表
+        $res = $this->agent->login($data);
+        return $res;
+    }
+    /**
+     * 购卡列表
+     * @param Request|null $request
+     * @return string
+     */
+    public function buycardlist(Request $request = null)
+    {
+        //获取参数
+        $data = $request->param();
+        //调取添加表
+        $res = $this->agent->login($data);
+        return $res;
+    }
+    /**
+     * 购卡
+     * @param Request|null $request
+     * @return string
+     */
+    public function buycard(Request $request = null)
+    {
+        //获取参数
+        $data = $request->param();
+        //调取添加表
+        $res = $this->agent->login($data);
+        return $res;
+    }
+    /**
+     * 5、发卡列表
+     * @param Request|null $request
+     * @return string
+     */
+    public function sendcardlist(Request $request = null)
+    {
+        //获取参数
+        $data = $request->param();
+        //调取添加表
+        $res = $this->agent->login($data);
+        return $res;
+    }
+    /**
+     * 发卡
+     * @param Request|null $request
+     * @return string
+     */
+    public function sendcard(Request $request = null)
+    {
+        //获取参数
+        $data = $request->param();
+        //调取添加表
+        $res = $this->agent->login($data);
+        return $res;
+    }
+
+
+/*    /**
      * 1-1 新增代理账号
      * @param Request $request
      */
-    public function agentCreated(Request $request = null)
+    public function agentCreated1(Request $request = null)
     {
         //获取参数 
         //调取添加表
@@ -58,18 +139,7 @@ class Agent
         $res = $this->agent->agent_change($data);        
         return $res;
     }
-    /**
-     * 1-3 代理登录
-     * @param Request $request
-     */
-    public function agentLogin(Request $request = null)
-    {
-        //获取参数
-        $data = $request->param();
-        //调取添加表
-        $res = $this->agent->login($data);
-        return $res;
-    }
+
     /**
      * 1-4 代理房卡总数
      * @param Request $request

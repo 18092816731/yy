@@ -54,5 +54,16 @@ class PlatAgent
 		$res = $this->agent->agentlist($data);
 		return $res;
 	}
+    /**
+     * 代理补卡
+     * @param Request $request
+     * @return unknown
+     */
+    public function agentbuycard(Request $request = null)
+    {
+        $data = $request->param();
+        $res = $this->agent->agentlist($data);
+        return $res;
+    }
 	
 }
