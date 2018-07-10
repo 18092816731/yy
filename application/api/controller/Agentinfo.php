@@ -125,6 +125,19 @@ class Agentinfo
         $res = $this->userCard->sendcard($data);
         return $res;
     }
+    /**
+     * 发卡
+     * @param Request|null $request
+     * @return string
+     */
+    public function getagentstatus(Request $request = null)
+    {
+        //获取参数
+        $data = $request->param();
+        //调取添加表
+        $res = $this->agent->getstatus($data);
+        return $res;
+    }
 
 /*************之前代码******************/
 /*    /**
