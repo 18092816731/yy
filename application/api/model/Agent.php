@@ -54,7 +54,7 @@ class Agent extends Model
     
         if ($response)
         {
-            if($response['status'] == 1)
+            if($response['status'] == 2)
             {
                 return return_json(2,'账号异常已被禁用');
             }
