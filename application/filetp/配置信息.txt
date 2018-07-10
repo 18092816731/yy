@@ -1,0 +1,23 @@
+我:
+公众号
+账号：kaizhan02@ynrd.com  
+密码：ynrd1234  这是公众号的账号和密码 
+
+我:
+游戏资源：47.104.252.120:1901
+
+游戏后台前端：47.105.38.207:1901
+
+游戏后台后端：47.105.37.81:1901(已配置好环境，mysql账号:root 密码：daque2018!#!$)
+远程桌面用户名：administrator密码：Qirandaque2018
+
+我:
+0x6E9D390687Eb1bFa4e01683f47c030Ea5641eD1E
+
+我:
+https://f2lj4d.axshare.com
+
+我:
+公众号
+账号：kaizhan02@ynrd.com  
+密码：ynrd1234  这是公众号的账号和密码  appid : wxf0c73cda0cc6c9c0  密钥 32872c10fd21073464b4b3a63d960c86
