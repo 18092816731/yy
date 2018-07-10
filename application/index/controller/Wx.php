@@ -42,10 +42,8 @@ class Wx  extends \think\Controller
 	   $access_token = $wxInfo['access_token'];
 	   $openid = $wxInfo['openid'];
 	   $res = $this->agent->wxLogin($wxInfo);
-	    header("Location:http://agency.daque.com/agencyAdmin/index.html#/getOpenId?openid=".$openid);
-	   if($res) {
-		   header("Location:www.baidu.com");
-	   }
+	    
+        header("Location:http://agency.daque.com/agencyAdmin/index.html#/getOpenId?openid=".$openid);
 	    exit;
 	   //$game_curl = game_curl('https://api.weixin.qq.com/sns/oauth2/access_token?appid=wxf0c73cda0cc6c9c0&secret=32872c10fd21073464b4b3a63d960c86&code=0017vUiI12ahP70ZGXlI1WA0jI17vUi3&grant_type=authorization_code');
 	  // dump($wxDate);
