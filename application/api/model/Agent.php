@@ -34,7 +34,7 @@ class Agent extends Model
         $find['openid'] = $data['openid'];
     
         //查询数据
-        $response = $this->find();
+        $response = $this->where($find)->find();
          
         if(!$response) {
             return return_json(2,'账号或者密码有误,请重试');
