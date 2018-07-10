@@ -110,6 +110,10 @@ class Agent extends Model
             return  return_json(2,'推荐码不能为空');
         } else {
             $insert['pid'] = $data['pid'];
+            $result = $this->where(['id'=>$insert['pid']])->find();
+            if(!$result) {
+                return  return_json(2,'推广员不存在');
+            }
         }
         $insert['status'] = 3;
         //检测看是否已经修改
