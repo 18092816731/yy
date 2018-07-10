@@ -3,7 +3,7 @@ namespace app\test\controller;
 use think\Cache;
 use think\Config;
 
-class Agent 
+class Agent extends  \think\Controller
 {
     protected $webUrl;
     protected $testUrl;
@@ -312,5 +312,8 @@ class Agent
     curl_setopt($ch, CURLOPT_POST, 1); 
     curl_setopt($ch, CURLOPT_POSTFIELDS, $data); 
     curl_exec($ch);  
+    }
+    public function pp(){
+        header("Location: http://www.baidu.com");
     }
 }
