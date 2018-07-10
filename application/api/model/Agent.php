@@ -180,11 +180,11 @@ class Agent extends Model
             if($data['status'] == 1 ) {
                 $update['status'] = 1;
             } else {
-                $update['status'] = 4;
+                $update['status'] = 5;
             }
         }
         //获取拒绝原因
-        if($update['status'] == 4){
+        if($update['status'] == 5){
             if(!array_key_exists('id', $data))
             {
                 return  return_json(2,'该用新增代理异常');
