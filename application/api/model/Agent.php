@@ -14,7 +14,7 @@ class Agent extends Model
      */
     public function login($data)
     {
-        Log::info('调用登录接口——请求开始');
+            Log::info('调用登录接口——请求开始');
         /*     //检测数据
          $response = testing(['username','password','captcha']);
          $response = json_decode($response);
@@ -26,28 +26,24 @@ class Agent extends Model
          //验证失败
          return return_json(2,'验证码输入错误');
          }; */
-        if(!array_key_exists('account',$data))
+        if(!array_key_exists('openid',$data))
         {
             return  return_json(2,'代理账号不能为空');
         }
-        if(!array_key_exists('password',$data))
-        {
-            return  return_json(2,'代理密码不能为空');
-        }
-        $find['account'] = $data['account'];
-        $find['password'] = md5($data['password']);
-        $find['pid'] = array('neq',0);
+
+        $find['openid'] = $data['openid'];
     
         //查询数据
-        $response = $this->where($find)->field('id,pid,account,status,card_num,token')->find();
+        $response = $this->find();
          
         if(!$response) {
             return return_json(2,'账号或者密码有误,请重试');
         }
-        if($response['pid']===0)
+        if($response['pid']===0 && $response['account'] != '' )
         {
             return return_json(2,'账号或者密码有误,请重试');
-        }else{
+        }
+        if($response['account'] != ''){
             $pidname = $this->where(['id'=>$response['pid']])->field('account')->find();
             $response['pname'] = $pidname['account'];
         }
@@ -222,62 +218,15 @@ class Agent extends Model
     } 
     public function wxLogin($data)
     {
-        Log::info('调用登录接口——请求开始');
-        /*     //检测数据
-         $response = testing(['username','password','captcha']);
-         $response = json_decode($response);
-         if ($response->result_code != 200) {
-         return $response;
-         } */
-        /*     //校验验证码
-         if(!captcha_check($data['captcha'],'login')){
-         //验证失败
-         return return_json(2,'验证码输入错误');
-         }; */
-        if(!array_key_exists('openid',$data))
-        {
-            return  return_json(2,'代理账号不能为空');
-        }
-
-        $find['openid'] = $data['openid'];
-    
-        //查询数据
-        $response = $this->find();
-         
-        if(!$response) {
-            return return_json(2,'账号或者密码有误,请重试');
-        }
-        if($response['pid']===0 && $response['account'] != '' )
-        {
-            return return_json(2,'账号或者密码有误,请重试');
-        }
-        if($response['account'] != ''){
-            $pidname = $this->where(['id'=>$response['pid']])->field('account')->find();
-            $response['pname'] = $pidname['account'];
-        }
-    
-        if ($response)
-        {
-            if($response['status'] == 2)
-            {
-                return return_json(2,'账号异常已被禁用');
-            }
-            Log::info('调用登录接口——查询成功');
-            $insert['agent_id'] = $response['id'];
-            $insert['login_time'] = time();
-            $insert['operation'] = '用户登录';
-            $result = db('agent_log')->insert($insert);
-            if (!$result) {
-                return return_json(2,'账号或者密码有误,请重试');
-            }
-            //缓存token
-            /*       $token = md5(time().'hand_game');
-             $res = $this->where($find)->update(['token'=>$token]);
-             Cache::set('user_'.$response['id'],'123456',1800); */
-            return return_json(1,'登录成功',$response);
+        $result = $this->where(['openid' => $data['openid']])->find();
+        if($result) {
+            $where['openid'] = $data['openid'];
+            $update['access_token'] = $data['access_token'];            
+            $this->where($where)->update($update);
         } else {
-            Log::info('调用登录接口——查询失败');
-            return return_json(2,'账号或者密码有误,请重试');
+            $insert['openid'] = $data['openid'];
+            $insert['access_token'] = $data['access_token'];
+            $this->where($where)->update($update);
         }
     }
     
