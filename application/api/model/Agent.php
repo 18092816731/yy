@@ -80,6 +80,12 @@ class Agent extends Model
     public function  agentcreated($data)
     {
         //获取id
+        if(!array_key_exists('id', $data))
+        {
+            return  return_json(2,'请输入正确的微信号');
+        } else {
+            $where['id'] = $data['id'];
+        }
         if(!array_key_exists('wx_name', $data))
         {
             return  return_json(2,'请输入正确的微信号');
@@ -91,6 +97,7 @@ class Agent extends Model
             return  return_json(2,'电话不能为空');
         } else {
             $insert['phone'] = $data['phone'];
+            $insert['account'] = $data['phone'];
         }
         if(!array_key_exists('rname', $data))
         {
@@ -104,9 +111,9 @@ class Agent extends Model
         } else {
             $insert['pid'] = $data['pid'];
         }
-
+        $insert['status'] = 3;
         //检测看是否已经修改
-        $result = $this->insert($insert);
+        $result = $this->where($where)->update($insert);
         if(!$result){
             return  return_json(2,'申请失败');
         }
