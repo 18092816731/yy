@@ -423,7 +423,7 @@ class AgentCard extends Model
     {
         Log::info("调用发送房卡接口");
         //字段验证
-        if(!array_key_exists('card_num',$data))
+        if(!array_key_exists('card_id',$data))
         {
             return  return_json(2,'房卡数不能为空');
         }
@@ -431,6 +431,9 @@ class AgentCard extends Model
         {
             return  return_json(2,'登录权限超时');
         }
+        $feeInfo = db('send_card_set')->where(['id'=>$data['card_id']])->find();
+        $card_num = $feeInfo['card_num'];//房卡数目
+        $fee_num = $feeInfo['fee_num'];
 
 
         //开启事务
@@ -446,7 +449,7 @@ class AgentCard extends Model
                 return  return_json(2,'微信不存在');
             }
             //参数验证
-            $update['card_num']  = $data['card_num'];
+            $update['card_num']  = $card_num;
             $update['agent_id'] = $data['id']; //代理id
             $update['user_account']  = $data['user_account'];//购买房卡用户账号
             $update['wx_name'] = $data['wx_name'];
