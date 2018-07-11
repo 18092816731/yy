@@ -264,6 +264,79 @@ class AgentCard extends Model
         }
         return return_json(1,'操作成功',$response);
     }
+
+    /**
+     * 平台相关
+     * @param $data
+     * @return string
+     */
+    public function platsendcard($data)
+    {
+        Log::info("调用发送房卡接口");
+        //字段验证
+        if(!array_key_exists('card_num',$data))
+        {
+            return  return_json(2,'房卡数不能为空');
+        }
+        if(!array_key_exists('id',$data))
+        {
+            return  return_json(2,'登录权限超时');
+        }
+        if(!array_key_exists('agent_account',$data))
+        {
+            return  return_json(2,'代理不存在');
+        }
+
+        //开启事务
+        db::startTrans();
+        try{
+            //$type = 1 平台发卡  $type = 2 代理发卡
+            if(!array_key_exists('agent_account',$data))
+            {
+                return  return_json(2,'代理账号不能为空');
+            }
+            //参数验证
+            $update['card_num']  = $data['card_num'];
+            $update['plat_id'] = $data['id'];
+            $update['agent_account']  = $data['agent_account'];
+            $update['created_at'] = time();
+
+            //获取买卡 代理账号
+            $userInfo = db('agent')->where(['account'=>$data['agent_account']])->find();
+            if(!$userInfo)
+            {
+                return  return_json(2,'代理不存在');
+            }
+
+            $update['agent_account'] = $userInfo['account'];
+            //给代理添加房卡 平台不消耗
+            $upplat['card_num']  = $userInfo['card_num'] + $update['card_num'];
+            $upplat['update_at'] =   time();
+
+            $response =  db('agent')->where(['account'=>$data['agent_account']])->update($upplat);
+
+            if(!$response)
+            {
+                return  return_json(2,'房卡数未能发放1');
+            }
+            //平台补卡使用日志
+            $result =  db('plat_card')->insert($update);
+            if(!$result)
+            {
+                return return_json(2,'房卡数未能发放2');
+            }
+
+            // 提交事务
+            Db::commit();
+            return return_json(1,'房卡数已发放');
+        } catch (\Exception $e) {
+            // 回滚事务
+            Db::rollback();
+            return return_json(2,'房卡数未能发放3');
+        }
+    }
+
+    /*************************************代理相关*******************************************/
     /**
      * 代理购卡（要完成支付）
      * @param $data

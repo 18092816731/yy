@@ -240,6 +240,106 @@ class Agent extends Model
             $this->insert($insert);
         }
     }
+
+    /***
+     * 返利信息
+     */
+    public function refee()
+    {
+        $result = db('refeeset')->where(['id'=>1])->find();
+        return return_json(1,'返利信息',$result,[]);
+    }
+    /**
+     * 返利信息设置
+     * @param $data
+     * @return string
+     */
+    public function refeeset($data)
+    {
+        if(!array_key_exists('one_fee', $data))
+        {
+            return  return_json(2,'该用新增代理异常');
+        } else {
+            $update['one_fee'] = $data['one_fee'];
+        }
+        if(!array_key_exists('tow_fee', $data))
+        {
+            return  return_json(2,'该用新增代理异常');
+        } else {
+            $update['tow_fee'] = $data['tow_fee'];
+        }
+        if(!array_key_exists('three_fee', $data))
+        {
+            return  return_json(2,'该用新增代理异常');
+        } else {
+            $update['three_fee'] = $data['three_fee'];
+        }
+        $result = db('refeeset')->where(['id'=>1])->update($update);
+        if($result) {
+            $result1 = db('refeeset')->where(['id'=>1])->find();
+            return  return_json(1,'已经设置',$result1);
+        }
+        return  return_json(1,'不能重复操作');
+
+    }
+    /**
+     * 提现审核列表
+     * @param $data
+     * @return string
+     */
+    public function returnfeelist($data)
+    {
+        $result = db('return_fee')->where(['id'=>1])->find();
+        if(!$result) {
+            return return_json(1,'没有数据',[],[]);
+        } else {
+            return return_json(1,'审核列表',$result,[]);
+        }
+
+
+    }
+    /**
+     * 提现审核
+     * @param $data
+     * @return string
+     */
+    public function returnfee($data)
+    {
+        if(!array_key_exists('id', $data))
+        {
+            return  return_json(2,'记录不存在');
+        } else {
+            $where['id'] = $data['id'];
+        }
+        if(!array_key_exists('plat_id', $data))
+        {
+            return  return_json(2,'操作人不存在');
+        } else {
+            $update['plat_id'] = $data['plat_id'];
+        }
+        if(!array_key_exists('status', $data))
+        {
+            return  return_json(2,'状态异常');
+        } else {
+            $update['status'] = $data['status'];
+        }
+        if($data['status'] == 3) {
+            if(!array_key_exists('cause', $data))
+            {
+                return  return_json(2,'缺少失败原因');
+            } else {
+                $update['cause'] = $data['cause'];
+            }
+        }
+        $result = db('return_fee')->where($where)->update($update);
+        if($result) {
+            $result1 = db('return_fee')->where($where)->find();
+            return return_json(1,'操作成功',$result1,[]);
+        }
+        return return_json(1,'操作失败',$result,[]);
+
+    }
+
     
 	/**************************************************************************之前的************************************************************************************/
 

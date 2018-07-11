@@ -62,7 +62,7 @@ class PlatAgent
     public function agentbuycard(Request $request = null)
     {
         $data = $request->param();
-        $res = $this->agent->agentlist($data);
+        $res = $this->userCard->platsendcard($data);
         return $res;
     }
 	

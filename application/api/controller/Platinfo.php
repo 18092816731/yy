@@ -145,7 +145,54 @@ class Platinfo
         $res = $this->userCard ->sendcarddel($date);
         return $res;
     }
-
+    /**
+     * 返利设置
+     * @param Request|null $request
+     * @return string
+     */
+    public function refee(Request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->agent->refee();
+        return $res;
+    }
+    /**
+     * 返利设置
+     * @param Request|null $request
+     * @return string
+     */
+    public function refeeset(Request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->agent->refeeset($date);
+        return $res;
+    }
+    /**
+     * 提现审核列表
+     * @param Request|null $request
+     * @return string
+     */
+    public function returnfeelist(Request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->agent->returnfeelist($date);
+        return $res;
+    }
+    /**
+     * 提现审核
+     * @param Request|null $request
+     * @return string
+     */
+    public function returnfee(Request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->agent->returnfee($date);
+        return $res;
+    }
 
 /*************之前***************/
 
