@@ -256,6 +256,7 @@ class Agent extends Model
      */
     public function refeeset($data)
     {
+        $update = [];
         if(array_key_exists('one_fee', $data))
         {
             $update['one_fee'] = $data['one_fee'];
