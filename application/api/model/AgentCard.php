@@ -368,14 +368,14 @@ class AgentCard extends Model
 
             //日志记录
 
-            if(!array_key_exists('user_account',$data))
+/*             if(!array_key_exists('user_account',$data))
             {
                 return  return_json(2,'用户账号不能为空');
             }
             if(!array_key_exists('wx_name',$data))
             {
                 return  return_json(2,'微信不存在');
-            }
+            } */
             //参数验证
             $update['card_num']  = $card_num;
             $update['agent_id'] = $data['id']; //代理id
