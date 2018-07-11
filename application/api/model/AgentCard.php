@@ -479,7 +479,7 @@ class AgentCard extends Model
             $dataGame['reqIp'] =get_client_ip();
             $dataGame['master'] =$agentInfo['account'];
             $dataGame['time'] = time();
-            $dataGame['auth'] =get_auth($dataGame);
+            //$dataGame['auth'] =get_auth($dataGame);
 /*            $url ="http://".Config::get('web_url')."/msh/AddArenaCard?userId=".$dataGame['userId']."&card=".$dataGame['card']."&master=".$dataGame['master']."&reqIp=".$dataGame['reqIp']."&time=".$dataGame['time']."&auth=".$dataGame['auth'];
             $gameBace = game_curl($url);
             $gameBace = json_decode($gameBace,'json');*/
