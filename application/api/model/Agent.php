@@ -256,18 +256,21 @@ class Agent extends Model
      */
     public function refeeset($data)
     {
-        if(!array_key_exists('one_fee', $data))
+        if(array_key_exists('one_fee', $data))
         {
             $update['one_fee'] = $data['one_fee'];
         } 
-        if(!array_key_exists('tow_fee', $data))
+        if(array_key_exists('tow_fee', $data))
         {
             $update['tow_fee'] = $data['tow_fee'];
         } 
-        if(!array_key_exists('three_fee', $data))
+        if(array_key_exists('three_fee', $data))
         {
             $update['three_fee'] = $data['three_fee'];
         } 
+        if(count($update) == 0) {
+            return  return_json(1,'数据重复');
+        }
         $result = db('refeeset')->where(['id'=>1])->update($update);
         if($result) {
             $result1 = db('refeeset')->where(['id'=>1])->find();
