@@ -237,7 +237,7 @@ class Agent extends Model
         } else {
             $insert['openid'] = $data['openid'];
             $insert['access_token'] = $data['access_token'];
-            $this->where($where)->update($update);
+            $this->insert($insert);
         }
     }
     
