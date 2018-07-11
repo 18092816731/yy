@@ -264,6 +264,171 @@ class AgentCard extends Model
         }
         return return_json(1,'操作成功',$response);
     }
+    /**
+     * 代理购卡（要完成支付）
+     * @param $data
+     * @return string
+     */
+    public function agent_get_card($data)
+    {
+        Log::info("调用发送房卡接口");
+        //字段验证
+        if(!array_key_exists('card_id',$data))
+        {
+            return  return_json(2,'房卡参数缺失');
+        }
+        if(!array_key_exists('id',$data))
+        {
+            return  return_json(2,'登录权限超时');
+        }
+
+
+        //开启事务
+        db::startTrans();
+        try{
+            //获取购买数额（fee_num）（card_num）
+            $feeInfo = db('buy_card_set')->where(['id'=>$data['card_id']])->find();
+            $card_num = $feeInfo['card_num'];//房卡数目
+            $fee_num = $feeInfo['fee_num'];
+
+            //支付部分
+
+            //日志记录
+
+            if(!array_key_exists('user_account',$data))
+            {
+                return  return_json(2,'用户账号不能为空');
+            }
+            if(!array_key_exists('wx_name',$data))
+            {
+                return  return_json(2,'微信不存在');
+            }
+            //参数验证
+            $update['card_num']  = $card_num;
+            $update['agent_id'] = $data['id']; //代理id
+            $update['user_account']  = $data['user_account'];//购买房卡用户账号
+            $update['wx_name'] = $data['wx_name'];
+            $update['status'] = 2;//添加纪录
+            $update['created_at'] = time();
+            //获取代理信息
+            $agentInfo = db('agent')->where(['id'=>$data['id']])->find();
+            if(!$agentInfo)
+            {
+                return  return_json(2,'没有代理信息');
+            }
+            //代理房卡消耗 用户房卡
+            $upagent['card_num']  = $agentInfo['card_num'] + $update['card_num'];
+            $upagent['update_at'] =   time();
+            $response =  db('agent')->where(['id'=>$data['id']])->update($upagent);
+            if(!$response)
+            {
+                return return_json(2,'房卡数未能发放');
+            }
+
+            //添加房卡使用日志
+            $result = $this->insert($update);
+            if(!$result)
+            {
+                return return_json(2,'房卡数未能发放');
+            }
+            //执行给用户加房卡（暂时不用）
+            // 提交事务
+            Db::commit();
+            return return_json(1,'房卡数已发放');
+        } catch (\Exception $e) {
+            // 回滚事务
+            Db::rollback();
+            return return_json(2,'房卡数未能发放');
+        }
+    }
+    /**
+     * 代理发卡
+     * @param $data
+     * @return string
+     */
+    public function agent_send_card($data)
+    {
+        Log::info("调用发送房卡接口");
+        //字段验证
+        if(!array_key_exists('card_num',$data))
+        {
+            return  return_json(2,'房卡数不能为空');
+        }
+        if(!array_key_exists('id',$data))
+        {
+            return  return_json(2,'登录权限超时');
+        }
+
+
+        //开启事务
+        db::startTrans();
+        try{
+            //$type = 1 平台发卡  $type = 2 代理发卡
+            if(!array_key_exists('user_account',$data))
+            {
+                return  return_json(2,'代理账号不能为空');
+            }
+            if(!array_key_exists('wx_name',$data))
+            {
+                return  return_json(2,'微信不存在');
+            }
+            //参数验证
+            $update['card_num']  = $data['card_num'];
+            $update['agent_id'] = $data['id']; //代理id
+            $update['user_account']  = $data['user_account'];//购买房卡用户账号
+            $update['wx_name'] = $data['wx_name'];
+            $update['created_at'] = time();
+            //获取代理信息
+            $agentInfo = db('agent')->where(['id'=>$data['id']])->find();
+            if(!$agentInfo)
+            {
+                return  return_json(2,'没有代理信息');
+            }
+            //代理房卡数量检查
+            if($agentInfo['card_num']<$update['card_num'])
+            {
+                return return_json(2,'房卡数目不足，请充值.当前房卡为'.$agentInfo['card_num']);
+            }
+            //代理房卡消耗 用户房卡
+            $upagent['card_num']  = $agentInfo['card_num'] - $update['card_num'];
+            $upagent['update_at'] =   time();
+            $response =  db('agent')->where(['id'=>$data['id']])->update($upagent);
+            if(!$response)
+            {
+                return return_json(2,'房卡数未能发放');
+            }
+            //调取远程游戏端接口
+            $dataGame['userId'] =$data['user_account'];
+            $dataGame['card'] =$data['card_num'];
+            $dataGame['reqIp'] =get_client_ip();
+            $dataGame['master'] =$agentInfo['account'];
+            $dataGame['time'] = time();
+            $dataGame['auth'] =get_auth($dataGame);
+/*            $url ="http://".Config::get('web_url')."/msh/AddArenaCard?userId=".$dataGame['userId']."&card=".$dataGame['card']."&master=".$dataGame['master']."&reqIp=".$dataGame['reqIp']."&time=".$dataGame['time']."&auth=".$dataGame['auth'];
+            $gameBace = game_curl($url);
+            $gameBace = json_decode($gameBace,'json');*/
+            $gameBace['result'] ='OK';
+            if($gameBace['result'] !='OK')
+            {
+                return return_json(2,'游戏房卡发放失败');
+            }
+
+            //添加房卡使用日志
+            $result = $this->insert($update);
+            if(!$result)
+            {
+                return return_json(2,'房卡数未能发放');
+            }
+            //执行给用户加房卡（暂时不用）
+            // 提交事务
+            Db::commit();
+            return return_json(1,'房卡数已发放');
+        } catch (\Exception $e) {
+            // 回滚事务
+            Db::rollback();
+            return return_json(2,'房卡数未能发放3');
+        }
+    }
     /*******之前的************/
     /**
      * 执行发房卡 
