@@ -287,15 +287,14 @@ class Agent extends Model
      */
     public function returnfeelist($data)
     {
-        $result = db('return_fee')->where(['id'=>1])->find();
+        $result = db('return_fee')->find();
         if(!$result) {
             return return_json(1,'没有数据',[],[]);
         } else {
             return return_json(1,'审核列表',$result,[]);
         }
-
-
     }
+    
     /**
      * 提现审核
      * @param $data
