@@ -258,22 +258,16 @@ class Agent extends Model
     {
         if(!array_key_exists('one_fee', $data))
         {
-            return  return_json(2,'该用新增代理异常');
-        } else {
             $update['one_fee'] = $data['one_fee'];
-        }
+        } 
         if(!array_key_exists('tow_fee', $data))
         {
-            return  return_json(2,'该用新增代理异常');
-        } else {
             $update['tow_fee'] = $data['tow_fee'];
-        }
+        } 
         if(!array_key_exists('three_fee', $data))
         {
-            return  return_json(2,'该用新增代理异常');
-        } else {
             $update['three_fee'] = $data['three_fee'];
-        }
+        } 
         $result = db('refeeset')->where(['id'=>1])->update($update);
         if($result) {
             $result1 = db('refeeset')->where(['id'=>1])->find();
