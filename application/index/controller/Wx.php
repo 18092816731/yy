@@ -32,6 +32,11 @@ class Wx  extends \think\Controller
         } */
         
     }
+    public function index(Request $request = null)
+    {
+        $data = $request->param();
+        echo $data['echostr'];exit;
+    }
 
     public function getopenid(Request $request = null)
     {
