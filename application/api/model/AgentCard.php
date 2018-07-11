@@ -379,8 +379,8 @@ class AgentCard extends Model
             //参数验证
             $update['card_num']  = $card_num;
             $update['agent_id'] = $data['id']; //代理id
-            $update['user_account']  = $data['user_account'];//购买房卡用户账号
-            $update['wx_name'] = $data['wx_name'];
+/*             $update['user_account']  = $data['user_account'];//购买房卡用户账号
+            $update['wx_name'] = $data['wx_name']; */
             $update['status'] = 2;//添加纪录
             $update['created_at'] = time();
             //获取代理信息
