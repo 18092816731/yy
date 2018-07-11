@@ -287,7 +287,7 @@ class Agent extends Model
      */
     public function returnfeelist($data)
     {
-        $result = db('return_fee')->find();
+        $result = db('return_fee')->select();
         if(!$result) {
             return return_json(1,'没有数据',[],[]);
         } else {
