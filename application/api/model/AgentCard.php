@@ -474,10 +474,10 @@ class AgentCard extends Model
                 return return_json(2,'房卡数未能发放');
             }
             //调取远程游戏端接口
-            $dataGame['userId'] =$data['user_account'];
-            $dataGame['card'] =$data['card_num'];
+            //$dataGame['userId'] =$data['user_account'];
+            //$dataGame['card'] =$data['card_num'];
             $dataGame['reqIp'] =get_client_ip();
-            $dataGame['master'] =$agentInfo['account'];
+            //$dataGame['master'] =$agentInfo['account'];
             $dataGame['time'] = time();
             //$dataGame['auth'] =get_auth($dataGame);
 /*            $url ="http://".Config::get('web_url')."/msh/AddArenaCard?userId=".$dataGame['userId']."&card=".$dataGame['card']."&master=".$dataGame['master']."&reqIp=".$dataGame['reqIp']."&time=".$dataGame['time']."&auth=".$dataGame['auth'];
