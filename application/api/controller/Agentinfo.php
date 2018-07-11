@@ -47,6 +47,20 @@ class Agentinfo
         $res = $this->agent->login($data);
         return $res;
     }
+    
+    /**
+     * 代理登录
+     * @param Request|null $request
+     * @return string
+     */
+    public function agentreturnfee(Request $request = null)
+    {
+        //获取参数
+        $data = $request->param();
+        //调取添加表
+        $res = $this->agent->agentreturnfee($data);
+        return $res;
+    }
     /**
      * 代理登录返回状态
      * @param Request|null $request

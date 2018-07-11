@@ -249,6 +249,17 @@ class Agent extends Model
         $result = db('refeeset')->where(['id'=>1])->find();
         return return_json(1,'返利信息',$result,[]);
     }
+    //返利费用
+    public function agentreturnfee($data){
+        if(!array_key_exists('id', $data))
+        {
+            return  return_json(2,'该用新增代理异常');
+        } else {
+            $where['id'] = $data['id'];
+        }
+        $result = db('agent')->field('return_fee')->where($where)->find();
+        return return_json(1,'返利信息',$result,[]);
+    }
     /**
      * 返利信息设置
      * @param $data
