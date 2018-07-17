@@ -124,6 +124,51 @@ class Agent extends Model
         return  return_json(1,'申请成功');
 
     }
+	/**
+	*代理信息查询
+	*/
+     public function  getAgentInfo($data)
+    {
+        //获取id
+        if(!array_key_exists('id', $data))
+        {
+            return  return_json(2,'请输入代理编号');
+        } else {
+            $where['id'] = $data['id'];
+        }
+        $res = db('agent')->where(['id'=>$data['id']])->find();
+		if(!$res) {
+			return  return_json(2,'代理不存在');
+		}
+		$result = db('agent')->where(['id'=>$res['pid']])->find();
+	    if(!$res) {
+			$res['pname'] = '';
+		}else{
+			$res['pname'] = $result['account'];
+		}
+		
+		$ress = db('agent_card')->where(['agent_id'=>$res['id']])->order('created_at desc')->limit(1)->select();
+	    if(!$ress) {
+			$res['last_send_card'] = '';
+		}else{
+			$res['last_send_card'] = $ress[0]['created_at'];
+		}
+
+		 $resss = db('plat_card')->where(['agent_account'=>$res['account']])->order('created_at desc')->limit(1)->select();
+		    if(!$resss) {
+			$res['last_buy_card'] = '';
+		}else{
+			$res['last_buy_card'] = $resss[0]['created_at'];
+		}
+		
+		$count = db('agent')->where(['pid'=>$data['id']])->count();
+				    if(!$count) {
+			$res['child_count'] = '';
+		}else{
+			$res['child_count'] = $count;
+		}
+		return return_json(1,'平台发卡记录',$res,[]);
+    }
     
     /**
      * 待审审核代理列表
@@ -298,12 +343,183 @@ class Agent extends Model
      */
     public function returnfeelist($data)
     {
-        $result = db('return_fee')->select();
-        if(!$result) {
-            return return_json(1,'没有数据',[],[]);
+		        //分页
+       if(!array_key_exists('id', $data))
+        {
+            return  return_json(2,'该用新增代理异常');
         } else {
-            return return_json(1,'审核列表',$result,[]);
+            $where['id'] = $data['id'];
         }
+		    $where = ' where agent_id =  '.$data['id'];//注意下面计算页数的sql
+		    if(array_key_exists('account',$data) && $data['account'] !='')
+            {
+                $where .= ' and account like  "%'.$data["account"].'%"';
+            }
+            if(array_key_exists('start_time', $data) && !array_key_exists('end_time', $data) && $data['start_time'] !='' && $data['end_time'] !='')
+            {
+                $where .= ' and created_at >= '.$data['start_time'];
+            }
+            if(!array_key_exists('start_time', $data) && array_key_exists('end_time', $data) && $data['start_time'] !='')
+            {
+                $where .= ' and  created_at <= '.$data['end_time'];
+            }
+            if(array_key_exists('start_time', $data) && array_key_exists('end_time', $data)&& $data['end_time'] !='')
+            {
+                $where .= ' and  created_at >= '.$data['start_time'].' and  created_at <= '.$data['end_time'];
+            } 
+
+        //计算总页数
+        $sqlc =  "select count(id)  from hand_return_fee_log ".$where;
+        $count = db()->Query($sqlc);
+        $totle = $count[0]["count(id)"];//总数
+        if(!array_key_exists('limit_page', $data))
+        {
+            $limit = 15;
+        } else {
+            $limit = $data['limit_page'];
+        }
+        //$limit = 15;//每页条数
+        $pageNum = ceil ( $totle/$limit); //总页数
+        //当前页
+        if(array_key_exists('npage', $data))
+        {
+            $npage = $data['npage'];
+        }else{
+            $npage = 1;
+        }
+        $start = ($npage-1)*$limit;
+        $page = [];
+        $page['npage'] = $npage;//当前页
+        $page['totle'] = $totle;//总条数
+        $page['tpage'] = $pageNum;//总页数
+	    $sql =  "select * from hand_return_fee_log ".$where."  limit ".$start.",".$limit;
+        $res = db()->Query($sql);
+        if(!$res) {
+            return return_json(1,'没有数据',[],$page);
+        } else {
+            return return_json(1,'审核列表',$res,$page);
+        }
+    }
+	    /**
+     * 提现审核列表
+     * @param $data
+     * @return string
+     */
+    public function feelist($data)
+    {
+		        //分页
+       /*if(!array_key_exists('id', $data))
+        {
+            return  return_json(2,'该用新增代理异常');
+        } else {
+            $where['id'] = $data['id'];
+        }*/
+		    $where = ' where status =  1';//注意下面计算页数的sql
+		    if(array_key_exists('account',$data) && $data['account'] !='')
+            {
+                $where .= ' and account like  "%'.$data["account"].'%"';
+            }
+            if(array_key_exists('start_time', $data) && !array_key_exists('end_time', $data) && $data['start_time'] !='' && $data['end_time'] !='')
+            {
+                $where .= ' and created_at >= '.$data['start_time'];
+            }
+            if(!array_key_exists('start_time', $data) && array_key_exists('end_time', $data) && $data['start_time'] !='')
+            {
+                $where .= ' and  created_at <= '.$data['end_time'];
+            }
+            if(array_key_exists('start_time', $data) && array_key_exists('end_time', $data)&& $data['end_time'] !='')
+            {
+                $where .= ' and  created_at >= '.$data['start_time'].' and  created_at <= '.$data['end_time'];
+            } 
+
+        //计算总页数
+        $sqlc =  "select count(id)  from hand_return_fee ".$where;
+        $count = db()->Query($sqlc);
+        $totle = $count[0]["count(id)"];//总数
+        if(!array_key_exists('limit_page', $data))
+        {
+            $limit = 15;
+        } else {
+            $limit = $data['limit_page'];
+        }
+        //$limit = 15;//每页条数
+        $pageNum = ceil ( $totle/$limit); //总页数
+        //当前页
+        if(array_key_exists('npage', $data))
+        {
+            $npage = $data['npage'];
+        }else{
+            $npage = 1;
+        }
+        $start = ($npage-1)*$limit;
+        $page = [];
+        $page['npage'] = $npage;//当前页
+        $page['totle'] = $totle;//总条数
+        $page['tpage'] = $pageNum;//总页数
+	    $sql =  "select * from hand_return_fee ".$where."  limit ".$start.",".$limit;
+        $res = db()->Query($sql);
+        if(!$res) {
+            return return_json(1,'没有数据',[],$page);
+        } else {
+            return return_json(1,'审核列表',$res,$page);
+        }
+    }
+	    /**
+     * 提现审核
+     * @param $data
+     * @return string
+     */
+    public function platreturn($data)
+    {
+
+        if(!array_key_exists('id', $data) && $data['id'] != '')
+        {
+            return  return_json(2,'记录不存在');
+        } else {
+            $update['agent_id'] = $data['id'];
+        }
+
+        if(!array_key_exists('fee_num', $data) && $data['fee_num'] != '')
+        {
+            return  return_json(2,'提现数目');
+        } else {
+            $update['fee_num'] = $data['fee_num'];
+        }
+            if(!array_key_exists('phone', $data))
+            {
+                return  return_json(2,'电话不能为空');
+            } else {
+                $update['phone'] = $data['phone'];
+            }
+
+            if(!array_key_exists('get_account', $data))
+            {
+                return  return_json(2,'电话不能为空');
+            } else {
+                $update['get_account'] = $data['get_account'];
+            }
+			if(!array_key_exists('pay_type', $data))
+            {
+                return  return_json(2,'电话不能为空');
+            } else {
+                $update['pay_type'] = $data['pay_type'];
+            }
+						if(!array_key_exists('rname', $data))
+            {
+                return  return_json(2,'电话不能为空');
+            } else {
+                $update['rname'] = $data['rname'];
+            }
+			$update['created_at'] = time();
+			
+		
+        $result = db('return_fee')->insert($update);
+        if($result) {
+             //$result1 = db('return_fee')->where($where)->find();
+            return return_json(1,'操作成功',$result,[]);
+        }
+        return return_json(1,'操作失败',$result,[]);
+
     }
     
     /**
@@ -610,6 +826,12 @@ class Agent extends Model
     public  function agent_change($data)
     {
         //字段检验  id account password
+        if(!array_key_exists('pid',$data))
+        {
+            return  return_json(2,'代理账号不能为空');
+        }else{
+			
+		}
         //参数检验 
         if(!array_key_exists('account',$data))
         {
@@ -712,25 +934,23 @@ class Agent extends Model
         }
         if(!array_key_exists('rname',$data))
         {
-           return  return_json(2,'代理真实姓名不能为空');
-        }else{
-            $updata['rname'] = $data['rname'];
+           $updata['rname'] = $data['rname'];
         }
          if(!array_key_exists('wx_name',$data))
         {
-           return  return_json(2,'代理微信号不能为空');
-        }else{
-            $updata['wx_name'] = $data['wx_name'];
+           $updata['wx_name'] = $data['wx_name'];
         }
-        if(!array_key_exists('phone',$data))
+        if(array_key_exists('phone',$data))
         {
-            return  return_json(2,'代理手机号不能为空');
-        }else{
             $updata['phone'] = $data['phone'];
+        }
+		if(array_key_exists('pid',$data))
+        {
+            $updata['pid'] = $data['pid'];
         }
         $res = $this->where(['id'=>$data['id']])->update($updata);
         if (!$res && $res['status']!=1) {
-            return return_json(2,'代理账号异常已被禁用');
+            return return_json(2,'数据一样，请更改');
         }else{
             $result = $this->where(['id'=>$data['id']])->find();
         }

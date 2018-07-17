@@ -397,6 +397,65 @@ class AgentCard extends Model
             {
                 return return_json(2,'房卡数未能发放');
             }
+			//获取获利配置
+			$return_fee = db('refeeset')->select();
+			//给第一级分利
+									
+				
+			if(isset($agentInfo['pid']) && $agentInfo['pid'] > 0){
+					$oneinfo = db('agent')->where(['id'=>$agentInfo['pid']])->find();
+					//更新返利
+					$oneupdate['return_fee'] = ($oneinfo['return_num'] + ($return_fee[0]['one_fee'] * $fee_num ))/100;
+					
+					$response =  db('agent')->where(['id'=>$agentInfo['pid']])->update($oneupdate);
+					//添加日志
+					$one_insert['totel_fee'] = $fee_num;
+					$one_insert['fee_num'] = $oneupdate['return_num'];
+				    $one_insert['agent_id'] = $agentInfo['id'];
+					$one_insert['account'] = $agentInfo['account'];
+			        $one_insert['created_at'] = time();
+					
+					$one_res = db('return_fee_log')->insert($one_insert);	
+					
+
+								//给第二级分利
+				if(isset($oneinfo['pid']) && $oneinfo['pid'] > 0){
+					
+						$towinfo = db('agent')->where(['id'=>$oneinfo['pid']])->find();
+						//更新返利
+													//更新返利 
+							$towupdate['return_fee'] = ($towinfo['return_num'] + ($return_fee[0]['tow_fee'] * $fee_num ))/100;
+							$response =  db('agent')->where(['id'=>$oneinfo['pid']])->update($towupdate);
+							//添加日志
+							$tow_insert['totel_fee'] = $fee_num;
+							$tow_insert['fee_num'] = $towupdate['return_num'];
+							$tow_insert['agent_id'] = $agentInfo['id'];
+							$tow_insert['account'] = $agentInfo['account'];
+							$tow_insert['created_at'] = time();
+							$one_res = db('return_fee_log')->insert($tow_insert);	
+						
+						
+						//添加日志					
+						
+				
+				} 
+									//给第三级分利
+					if(isset($towinfo['pid']) && $towinfo['pid'] > 0){
+							$threeinfo = db('agent')->where(['id'=>$towinfo['pid']])->find();
+											//更新返利
+					$threeupdate['return_fee'] = ($threeinfo['return_num'] + ($return_fee[0]['three_fee'] * $fee_num ))/100;
+					$response =  db('agent')->where(['id'=>$towinfo['pid']])->update($threeupdate);
+					//添加日志
+					$three_insert['totel_fee'] = $fee_num;
+					$three_insert['fee_num'] = $threeupdate['return_num'];
+					$three_insert['agent_id'] = $agentInfo['id'];
+					$three_insert['account'] = $agentInfo['account'];
+			        $three_insert['created_at'] = time();
+					$one_res = db('return_fee_log')->insert($three_insert);			
+					}			
+					
+			}
+
 
             //添加房卡使用日志
             $result = $this->insert($update);

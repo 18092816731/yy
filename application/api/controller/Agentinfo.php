@@ -87,6 +87,19 @@ class Agentinfo
         $res = $this->agent->agentcreated($data);
         return $res;
     }
+	    /**
+     * 代理申请
+     * @param Request|null $request
+     * @return string
+     */
+    public function getAgentInfo(Request $request = null)
+    {
+        //获取参数
+        $data = $request->param();
+        //调取添加表
+        $res = $this->agent->getAgentInfo($data);
+        return $res;
+    }
     /**
      * 购卡列表
      * @param Request|null $request
@@ -152,20 +165,17 @@ class Agentinfo
         $res = $this->agent->getstatus($data);
         return $res;
     }
-
-/*************之前代码******************/
-/*    /**
-     * 1-1 新增代理账号
-     * @param Request $request
+	    /**
+     * 1-8 代理账号获取代理信息
      */
-    public function agentCreated1(Request $request = null)
+    public function agentAcInfo(Request $request = null)
     {
-        //获取参数 
+        //获取参数
+        $data = $request->param();
         //调取添加表
-        $res = $this->agent->created_agent();        
+        $res = $this->agent->agentAcInfo($data);
         return $res;
     }
-    
     /**
      * 1-2 代理账号信息修改
      * @param Request $request
@@ -179,32 +189,7 @@ class Agentinfo
         $res = $this->agent->agent_change($data);        
         return $res;
     }
-
-    /**
-     * 1-4 代理房卡总数
-     * @param Request $request
-     */
-    public function agentCardNum(Request $request = null)
-    {
-        //获取参数
-        $data = $request->param();
-        //调取添加表
-        $res = $this->agent->agent_card_num($data);
-        return $res;
-    }
-    /**
-     * 1-5  代理列表
-     * @param Request $request
-     */
-    public function agentList(Request $request = null)
-    {
-        //获取参数
-        $data = $request->param();
-        //调取添加表
-        $res = $this->agent->agentList($data);
-        return $res;
-    }
-    /**
+	 /**
      * 1-6 代理商修改
      */
     public function agentInfoChange(Request $request = null)
@@ -248,17 +233,47 @@ class Agentinfo
         $res = $this->agent->newsPassword($data);
         return $res;
     }
-    /**
-     * 1-8 代理账号获取代理信息
+/*************之前代码******************/
+/*    /**
+     * 1-1 新增代理账号
+     * @param Request $request
      */
-    public function agentAcInfo(Request $request = null)
+    public function agentCreated1(Request $request = null)
+    {
+        //获取参数 
+        //调取添加表
+        $res = $this->agent->created_agent();        
+        return $res;
+    }
+    
+
+
+    /**
+     * 1-4 代理房卡总数
+     * @param Request $request
+     */
+    public function agentCardNum(Request $request = null)
     {
         //获取参数
         $data = $request->param();
         //调取添加表
-        $res = $this->agent->agentAcInfo($data);
+        $res = $this->agent->agent_card_num($data);
         return $res;
     }
+    /**
+     * 1-5  代理列表
+     * @param Request $request
+     */
+    public function agentList(Request $request = null)
+    {
+        //获取参数
+        $data = $request->param();
+        //调取添加表
+        $res = $this->agent->agentList($data);
+        return $res;
+    }
+   
+
     /**
      * 1-9 代理账号获取代理信息
      */

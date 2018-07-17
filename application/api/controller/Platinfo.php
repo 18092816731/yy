@@ -170,7 +170,7 @@ class Platinfo
         return $res;
     }
     /**
-     * 提现审核列表
+     *列表
      * @param Request|null $request
      * @return string
      */
@@ -179,6 +179,30 @@ class Platinfo
         $date = $request->param();
         //调取添加表
         $res = $this->agent->returnfeelist($date);
+        return $res;
+    }
+	    /**
+     * 提现shenqing
+     * @param Request|null $request
+     * @return string
+     */
+    public function platreturn(Request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->agent->platreturn($date);
+        return $res;
+    }
+	    /**
+     * 提现审核列表
+     * @param Request|null $request
+     * @return string
+     */
+    public function platreturnfee(Request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->agent->feelist($date);
         return $res;
     }
     /**
