@@ -66,7 +66,7 @@ class Platlog extends Model
         $page['totle'] = $totle;//总条数
         $page['tpage'] = $pageNum;//总页数
 
-        $sql =  "select * from (select a.fee_num,a.plat_id,a.card_num,b.wx_name,a.created_at,a.agent_account,b.account  as  agent_name from hand_plat_card as a,hand_agent as b ".$where." order by a.created_at desc) agentinfo limit ".$start.",".$limit;
+        $sql =  "select * from (select a.fee_num,a.agent_id ,a.plat_id,a.card_num,b.wx_name,a.created_at,a.agent_account,b.account as  agent_name from hand_plat_card as a,hand_agent as b ".$where." order by a.created_at desc) agentinfo limit ".$start.",".$limit;
 
 
         $res = db()->Query($sql);
@@ -195,7 +195,7 @@ class Platlog extends Model
         $page['totle'] = $totle;//总条数
         $page['tpage'] = $pageNum;//总页数
 
-        $sql =  "select * from (select agent_id,totel_fee,fee_num,created_at,pname,pid from hand_return_fee_log ".$where." order by created_at desc) agentinfo limit ".$start.",".$limit;
+        $sql =  "select * from (select id,agent_id,totel_fee,fee_num,created_at,pname,pid from hand_return_fee_log ".$where." order by created_at desc) agentinfo limit ".$start.",".$limit;
 
         $res = db()->Query($sql);
         //判断是否为空
@@ -258,7 +258,7 @@ class Platlog extends Model
         $page['totle'] = $totle;//总条数
         $page['tpage'] = $pageNum;//总页数
 
-        $sql =  "select * from (select fee_num,plat_id,status,cause,created_at,get_account,pay_type from  hand_return_fee ".$where." order by created_at desc) agentinfo limit ".$start.",".$limit;
+        $sql =  "select * from (select agent_id,fee_num,plat_id,status,cause,created_at,get_account,pay_type from  hand_return_fee ".$where." order by created_at desc) agentinfo limit ".$start.",".$limit;
 
         $res = db()->Query($sql);
         //判断是否为空
@@ -301,7 +301,6 @@ class Platlog extends Model
         {
             $where .= ' and a.created_at >= '.$data['start_time'].' and a.created_at <= '.$data['end_time'];
         }
-
         //分页
         //计算总页数
 
@@ -324,7 +323,7 @@ class Platlog extends Model
         $page['totle'] = $totle;//总条数
         $page['tpage'] = $pageNum;//总页数
 
-        $sql =  "select * from (select a.fee_num,a.plat_id,a.card_num,b.wx_name,a.created_at,a.agent_account,b.account  as  agent_name from hand_plat_card as a,hand_agent as b ".$where." order by a.created_at desc) agentinfo limit ".$start.",".$limit;
+        $sql =  "select * from (select a.agent_id,a.fee_num,a.plat_id,a.card_num,b.wx_name,a.created_at,a.agent_account,b.account  as  agent_name from hand_plat_card as a,hand_agent as b ".$where." order by a.created_at desc) agentinfo limit ".$start.",".$limit;
 
 
         $res = db()->Query($sql);
