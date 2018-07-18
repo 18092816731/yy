@@ -21,7 +21,7 @@ class Platlog extends Model
     {
         //获取查询sql
         $where = 'where  a.plat_id = b.id';
-        if(array_key_exists('account', $data) )
+        if(array_key_exists('account', $data)&& $data['account'] !=  '')
         {
             $agentInfo = db('agent')->where(['account'=>$data['account']])->find();
             if(!$agentInfo)
@@ -89,7 +89,7 @@ class Platlog extends Model
     {
 
         $where = ' where a.agent_id  = b.id ';
-        if(array_key_exists('account', $data) )
+        if(array_key_exists('account', $data)&& $data['account'] !=  '' )
         {
             $agentInfo = db('agent')->where(['account'=>$data['account']])->find();
             if(!$agentInfo)
@@ -152,7 +152,7 @@ class Platlog extends Model
     public function returnfeelogs($data)
     {
         $where = 'where id > 0';
-        if(array_key_exists('account', $data) )
+        if(array_key_exists('account', $data) && $data['account'] !=  '')
         {
             $agentInfo = db('agent')->where(['account'=>$data['account']])->find();
             if(!$agentInfo)
@@ -215,7 +215,7 @@ class Platlog extends Model
     public function putfeelogs($data)
     {
         $where = 'where id > 0';
-        if(array_key_exists('account', $data) )
+        if(array_key_exists('account', $data)&& $data['account'] !=  '' )
         {
             $agentInfo = db('agent')->where(['account'=>$data['account']])->find();
             if(!$agentInfo)
@@ -279,7 +279,7 @@ class Platlog extends Model
     {
         //获取查询sql
         $where = 'where  a.plat_id = b.id and a.status = 2 ';
-        if(array_key_exists('account', $data) )
+        if(array_key_exists('account', $data)&& $data['account'] !=  '' )
         {
             $agentInfo = db('agent')->where(['account'=>$data['account']])->find();
             if(!$agentInfo)
