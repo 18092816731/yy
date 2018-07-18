@@ -120,7 +120,6 @@ class AgentCard extends Model
         }
         return return_json(1,'操作成功',$response);
     }
-
     //删
     public function buycarddel($data)
     {
@@ -247,7 +246,6 @@ class AgentCard extends Model
         }
         return return_json(1,'操作成功',$response);
     }
-
     //删
     public function sendcarddel($data)
     {
@@ -309,9 +307,11 @@ class AgentCard extends Model
             }
 
             $update['agent_account'] = $userInfo['account'];
+
             //给代理添加房卡 平台不消耗
             $upplat['card_num']  = $userInfo['card_num'] + $update['card_num'];
             $upplat['update_at'] =   time();
+
 
             $response =  db('agent')->where(['account'=>$data['agent_account']])->update($upplat);
 
@@ -320,6 +320,7 @@ class AgentCard extends Model
                 return  return_json(2,'房卡数未能发放1');
             }
             //平台补卡使用日志
+            $update['status'] = 2;
             $result =  db('plat_card')->insert($update);
             if(!$result)
             {
@@ -631,8 +632,8 @@ class AgentCard extends Model
         return return_json(1,'平台发卡记录',$res,$page);
     
 	}
-	//代理购卡日志 
-		public function buy_card_logs($data)
+	//代理购卡日志
+    public function buy_card_logs($data)
 	{
 		        //获取查询sql
             if(!array_key_exists('id', $data) )
@@ -696,7 +697,7 @@ class AgentCard extends Model
     
 	}
 	//代理获利日志
-		public function return_fee_logs($data)
+    public function return_fee_logs($data)
 	{
 		            if(!array_key_exists('id',$data))
             {

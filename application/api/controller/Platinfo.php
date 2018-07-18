@@ -10,18 +10,16 @@ use app\api\model\Agent;
 class Platinfo
 {
     //属性
-    protected  $agent;
     protected  $userCard;
+    protected  $Platlog;
     /**
      * 构造函数
      */
     public function __construct()
     {
-        $this->agent = new \app\api\model\Agent();
+        $this->Platlog = new \app\api\model\Platlog();
         $this->userCard  = new \app\api\model\AgentCard();
     }
-
-
     /**
      * 平台等录
      * @param Request|null $request
@@ -47,7 +45,7 @@ class Platinfo
         $res = $this->agent->plat_loginout($date);
         return $res;
     }
-/*****************************购卡设计**************************************/
+    /*****************************购卡设计**************************************/
     /**
      * 购卡设置列表
      * @param Request|null $request
@@ -217,6 +215,76 @@ class Platinfo
         $res = $this->agent->returnfee($date);
         return $res;
     }
+    /*****************************日志**************************************/
+    /***
+     * 进卡日志
+     * @param Request|null $request
+     * @return string
+     */
+    public function buycardlogs(request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->Platlog->buycardlogs($date);
+        return $res;
+    }
+
+    /**
+     * 发卡日志
+     * @param Request|null $request
+     * @return string
+     */
+    public function sendcardlogs(request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->Platlog->sendcardlogs($date);
+        return $res;
+    }
+    /**
+     * 返利日志
+     * @param Request|null $request
+     * @return string
+     */
+    public function returnfeelogs(request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->Platlog->returnfeelogs($date);
+        return $res;
+    }
+    /**
+ * 返利日志
+ * @param Request|null $request
+ * @return string
+ */
+    public function putfeelogs(request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->Platlog->putfeelogs($date);
+        return $res;
+    }
+    /**
+     * 补卡日志
+     * @param Request|null $request
+     * @return string
+     */
+    public function havecardlog(request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->Platlog->havecardlog($date);
+        return $res;
+    }
+    public function agentinfo(request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->Platlog->agentinfo($date);
+        return $res;
+    }
+
 
 /*************之前***************/
 
@@ -224,7 +292,6 @@ class Platinfo
      * 1-1 新增平台|游戏账号
      * @param Request $request
      */
-
     public function platCreated(Request $request = null)
     {
         //获取参数
@@ -234,8 +301,6 @@ class Platinfo
         $res = $this->agent->created_agent($date);
         return $res;
     }
-
-
     /**
      * 1-2 平台|游戏账号信息修改
      * @param Request $request
@@ -247,7 +312,6 @@ class Platinfo
         $res = $this->agent->created_agent();
         return $res;
     }*/
-    
 
     /**
      * 2-1 平台|游戏发房卡
