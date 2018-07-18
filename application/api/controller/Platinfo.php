@@ -12,6 +12,7 @@ class Platinfo
     //属性
     protected  $userCard;
     protected  $Platlog;
+    protected  $agent;
     /**
      * 构造函数
      */
@@ -19,6 +20,7 @@ class Platinfo
     {
         $this->Platlog = new \app\api\model\Platlog();
         $this->userCard  = new \app\api\model\AgentCard();
+        $this->userCard  = new \app\api\model\Agent();
     }
     /**
      * 平台等录
