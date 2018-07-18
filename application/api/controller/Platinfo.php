@@ -20,7 +20,7 @@ class Platinfo
     {
         $this->Platlog = new \app\api\model\Platlog();
         $this->userCard  = new \app\api\model\AgentCard();
-        $this->userCard  = new \app\api\model\Agent();
+        $this->agent  = new \app\api\model\Agent();
     }
     /**
      * 平台等录
