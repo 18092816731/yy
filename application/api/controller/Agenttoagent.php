@@ -97,6 +97,57 @@ class Agenttoagent
             return return_json(2,'用户验证失败');
         }
 
+    }    
+	/**
+     * 发房卡日志
+     * @param Request|null $request
+     * @return string
+     */
+    public function send_card_logs(Request $request = null)
+    {
+        //获取参数
+        $data = $request->param();
+        //调取添加表
+        $res = $this->userCard->send_card_logs($data);
+        return $res;
+    }    /**
+     * 代理maifangkarizhi
+     * @param Request|null $request
+     * @return string
+     */
+    public function buy_card_logs(Request $request = null)
+    {
+        //获取参数
+        $data = $request->param();
+        //调取添加表
+        $res = $this->userCard->buy_card_logs($data);
+        return $res;
+    }
+	    /**
+     * fanlirizhi
+     * @param Request|null $request
+     * @return string
+     */
+    public function return_fee_logs(Request $request = null)
+    {
+        //获取参数
+        $data = $request->param();
+        //调取添加表
+        $res = $this->userCard->return_fee_logs($data);
+        return $res;
+    }
+	    /**
+     * tixianrizhi
+     * @param Request|null $request
+     * @return string
+     */
+    public function put_fee_logs(Request $request = null)
+    {
+        //获取参数
+        $data = $request->param();
+        //调取添加表
+        $res = $this->userCard->put_fee_logs($data);
+        return $res;
     }
     /*************************之前的*******************************/
     /**

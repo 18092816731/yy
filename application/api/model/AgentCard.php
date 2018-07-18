@@ -393,6 +393,7 @@ class AgentCard extends Model
             $upagent['card_num']  = $agentInfo['card_num'] + $update['card_num'];
             $upagent['update_at'] =   time();
             $response =  db('agent')->where(['id'=>$data['id']])->update($upagent);
+			
             if(!$response)
             {
                 return return_json(2,'房卡数未能发放');
@@ -403,18 +404,23 @@ class AgentCard extends Model
 									
 				
 			if(isset($agentInfo['pid']) && $agentInfo['pid'] > 0){
+				
 					$oneinfo = db('agent')->where(['id'=>$agentInfo['pid']])->find();
 					//更新返利
 					$oneupdate['return_fee'] = ($oneinfo['return_num'] + ($return_fee[0]['one_fee'] * $fee_num ))/100;
-					
+
 					$response =  db('agent')->where(['id'=>$agentInfo['pid']])->update($oneupdate);
+					
 					//添加日志
 					$one_insert['totel_fee'] = $fee_num;
-					$one_insert['fee_num'] = $oneupdate['return_num'];
+					$one_insert['fee_num'] = $oneupdate['return_fee'];
 				    $one_insert['agent_id'] = $agentInfo['id'];
 					$one_insert['account'] = $agentInfo['account'];
-			        $one_insert['created_at'] = time();
+				    $one_insert['pid'] = $oneinfo['id'];
+					$one_insert['pname'] = $oneinfo['wx_name'];
 					
+			        $one_insert['created_at'] = time();
+										
 					$one_res = db('return_fee_log')->insert($one_insert);	
 					
 
@@ -428,9 +434,11 @@ class AgentCard extends Model
 							$response =  db('agent')->where(['id'=>$oneinfo['pid']])->update($towupdate);
 							//添加日志
 							$tow_insert['totel_fee'] = $fee_num;
-							$tow_insert['fee_num'] = $towupdate['return_num'];
+							$tow_insert['fee_num'] = $towupdate['return_fee'];
 							$tow_insert['agent_id'] = $agentInfo['id'];
 							$tow_insert['account'] = $agentInfo['account'];
+											    $tow_insert['pid'] = $towinfo['id'];
+					$tow_insert['pname'] = $towinfo['wx_name'];
 							$tow_insert['created_at'] = time();
 							$one_res = db('return_fee_log')->insert($tow_insert);	
 						
@@ -447,9 +455,11 @@ class AgentCard extends Model
 					$response =  db('agent')->where(['id'=>$towinfo['pid']])->update($threeupdate);
 					//添加日志
 					$three_insert['totel_fee'] = $fee_num;
-					$three_insert['fee_num'] = $threeupdate['return_num'];
+					$three_insert['fee_num'] = $threeupdate['return_fee'];
 					$three_insert['agent_id'] = $agentInfo['id'];
 					$three_insert['account'] = $agentInfo['account'];
+																    $three_insert['pid'] = $threeinfo['id'];
+					$three_insert['pname'] = $threeinfo['wx_name'];
 			        $three_insert['created_at'] = time();
 					$one_res = db('return_fee_log')->insert($three_insert);			
 					}			
@@ -458,6 +468,7 @@ class AgentCard extends Model
 
 
             //添加房卡使用日志
+			$update['fee_num'] = $fee_num;
             $result = $this->insert($update);
             if(!$result)
             {
@@ -564,6 +575,236 @@ class AgentCard extends Model
             return return_json(2,'房卡数未能发放3');
         }
     }
+	/*******************************日志**********************************/
+	//代理发卡日志
+	public function send_card_logs($data)
+	{
+
+            if(!array_key_exists('id',$data))
+            {
+                return  return_json(2,'代理不存在');
+            }  
+            $where = ' where a.agent_id  = b.id and a.agent_id = '.$data["id"];
+              if(array_key_exists('start_time', $data) && !array_key_exists('end_time', $data) && $data['start_time'] !='' && $data['end_time'] !='')
+            {
+                $where .= ' and a.created_at >= '.$data['start_time'];
+            }
+            if(!array_key_exists('start_time', $data) && array_key_exists('end_time', $data) && $data['start_time'] !='')
+            {
+                $where .= ' and a.created_at <= '.$data['end_time'];
+            }
+            if(array_key_exists('start_time', $data) && array_key_exists('end_time', $data)&& $data['end_time'] !='')
+            {
+                $where .= ' and a.created_at >= '.$data['start_time'].' and a.created_at <= '.$data['end_time'];
+            } 
+            //分页
+            //计算总页数
+            
+            $sqlc =  "select count(a.agent_id)  from hand_agent_card as a,hand_agent as b  ".$where;
+            $count = db()->Query($sqlc);
+
+            $totle = $count[0]["count(a.agent_id)"];//总数
+            $limit = 30;//每页条数
+            $pageNum = ceil ( $totle/$limit); //总页数
+            //当前页
+            if(array_key_exists('npage', $data))
+            {
+                $npage = $data['npage'];
+            }else{
+                $npage = 1;
+            }
+            $start = ($npage-1)*$limit;
+            $page = [];
+            $page['npage'] = $npage;//当前页
+            $page['totle'] = $totle;//总条数
+            $page['tpage'] = $pageNum;//总页数
+            
+            $sql =  "select * from (select a.agent_id,a.card_num,a.created_at,a.user_account,a.wx_name,b.account  as  agent_name from hand_agent_card as a,hand_agent as b ".$where." order by a.created_at desc) agentinfo limit ".$start.",".$limit;
+            
+            $res = db()->Query($sql);
+        //判断是否为空
+        if(!$res)
+        {
+            return return_json(1,'暂无信息 ');
+        }
+        //返回结果
+        return return_json(1,'平台发卡记录',$res,$page);
+    
+	}
+	//代理购卡日志 
+		public function buy_card_logs($data)
+	{
+		        //获取查询sql
+            if(!array_key_exists('id', $data) )
+            {
+                return return_json(2,'暂无代理信息 ');
+            }else{
+                $agentInfo = db('agent')->where(['id'=>$data['id']])->find();
+                if(!$agentInfo)
+                {
+                    return return_json(2,'暂无代理信息 ');
+                }
+            }   
+            $where = 'where a.agent_id  = b.id and a.agent_account = '.$agentInfo['account'];
+
+            if(array_key_exists('start_time', $data) && !array_key_exists('end_time', $data) && $data['start_time'] !='' && $data['end_time'] !='')
+            {
+                $where .= ' and a.created_at >= '.$data['start_time'];
+            }
+            if(!array_key_exists('start_time', $data) && array_key_exists('end_time', $data) && $data['start_time'] !='')
+            {
+                $where .= ' and a.created_at <= '.$data['end_time'];
+            }
+            if(array_key_exists('start_time', $data) && array_key_exists('end_time', $data)&& $data['end_time'] !='')
+            {
+                $where .= ' and a.created_at >= '.$data['start_time'].' and a.created_at <= '.$data['end_time'];
+            } 
+
+            //分页
+            //计算总页数
+            $sqlc =  "select count(a.plat_id)  from hand_plat_card as a,hand_agent as b  ".$where;
+			   
+            $count = db()->Query($sqlc);
+            $totle = $count[0]["count(a.plat_id)"];//总数
+            $limit = 30;//每页条数
+            $pageNum = ceil ( $totle/$limit); //总页数
+            //当前页
+            if(array_key_exists('npage', $data))
+            {
+                $npage = $data['npage'];
+            }else{
+                $npage = 1;
+            }
+            $start = ($npage-1)*$limit;
+            $page = [];
+            $page['npage'] = $npage;//当前页
+            $page['totle'] = $totle;//总条数
+            $page['tpage'] = $pageNum;//总页数
+
+            $sql =  "select * from (select a.fee_num,a.plat_id,a.card_num,a.created_at,a.agent_account,b.account  as  agent_name from hand_plat_card as a,hand_agent as b ".$where." order by a.created_at desc) agentinfo limit ".$start.",".$limit;
+        
+        
+        $res = db()->Query($sql);
+        
+        //判断是否为空
+        if(!$res)
+        {
+            return return_json(1,'暂无信息 ');
+        }
+        //返回结果
+        return return_json(1,'平台发卡记录',$res,$page);         
+    
+	}
+	//代理获利日志
+		public function return_fee_logs($data)
+	{
+		            if(!array_key_exists('id',$data))
+            {
+                return  return_json(2,'代理不存在');
+            }  
+            $where = ' where agent_id  ='.$data["id"];
+              if(array_key_exists('start_time', $data) && !array_key_exists('end_time', $data) && $data['start_time'] !='' && $data['end_time'] !='')
+            {
+                $where .= ' and created_at >= '.$data['start_time'];
+            }
+            if(!array_key_exists('start_time', $data) && array_key_exists('end_time', $data) && $data['start_time'] !='')
+            {
+                $where .= ' and created_at <= '.$data['end_time'];
+            }
+            if(array_key_exists('start_time', $data) && array_key_exists('end_time', $data)&& $data['end_time'] !='')
+            {
+                $where .= ' and created_at >= '.$data['start_time'].' and created_at <= '.$data['end_time'];
+            } 
+            //分页
+            //计算总页数
+            
+            $sqlc =  "select count(agent_id)  from hand_return_fee_log   ".$where;
+            $count = db()->Query($sqlc);
+
+            $totle = $count[0]["count(agent_id)"];//总数
+            $limit = 30;//每页条数
+            $pageNum = ceil ( $totle/$limit); //总页数
+            //当前页
+            if(array_key_exists('npage', $data))
+            {
+                $npage = $data['npage'];
+            }else{
+                $npage = 1;
+            }
+            $start = ($npage-1)*$limit;
+            $page = [];
+            $page['npage'] = $npage;//当前页
+            $page['totle'] = $totle;//总条数
+            $page['tpage'] = $pageNum;//总页数
+            
+            $sql =  "select * from (select agent_id,totel_fee,fee_num,created_at,pname,pid from hand_return_fee_log ".$where." order by created_at desc) agentinfo limit ".$start.",".$limit;
+            
+            $res = db()->Query($sql);
+        //判断是否为空
+        if(!$res)
+        {
+            return return_json(1,'暂无信息 ');
+        }
+        //返回结果
+        return return_json(1,'平台发卡记录',$res,$page);
+    
+	}
+	//体现日志
+	public function put_fee_logs($data)
+	{
+		            if(!array_key_exists('id',$data))
+            {
+                return  return_json(2,'代理不存在');
+            }  
+            $where = ' where agent_id  ='.$data["id"];
+              if(array_key_exists('start_time', $data) && !array_key_exists('end_time', $data) && $data['start_time'] !='' && $data['end_time'] !='')
+            {
+                $where .= ' and created_at >= '.$data['start_time'];
+            }
+            if(!array_key_exists('start_time', $data) && array_key_exists('end_time', $data) && $data['start_time'] !='')
+            {
+                $where .= ' and created_at <= '.$data['end_time'];
+            }
+            if(array_key_exists('start_time', $data) && array_key_exists('end_time', $data)&& $data['end_time'] !='')
+            {
+                $where .= ' and created_at >= '.$data['start_time'].' and created_at <= '.$data['end_time'];
+            } 
+            //分页
+            //计算总页数
+            
+            $sqlc =  "select count(agent_id)  from hand_return_fee   ".$where;
+            $count = db()->Query($sqlc);
+
+            $totle = $count[0]["count(agent_id)"];//总数
+            $limit = 30;//每页条数
+            $pageNum = ceil ( $totle/$limit); //总页数
+            //当前页
+            if(array_key_exists('npage', $data))
+            {
+                $npage = $data['npage'];
+            }else{
+                $npage = 1;
+            }
+            $start = ($npage-1)*$limit;
+            $page = [];
+            $page['npage'] = $npage;//当前页
+            $page['totle'] = $totle;//总条数
+            $page['tpage'] = $pageNum;//总页数
+            
+            $sql =  "select * from (select fee_num,status,cause,created_at,get_account,pay_type from  hand_return_fee".$where." order by created_at desc) agentinfo limit ".$start.",".$limit;
+            
+            $res = db()->Query($sql);
+        //判断是否为空
+        if(!$res)
+        {
+            return return_json(1,'暂无信息 ');
+        }
+        //返回结果
+        return return_json(1,'平台发卡记录',$res,$page);
+    
+	}
+	//代理购卡日志 
+
     /*******之前的************/
     /**
      * 执行发房卡 
