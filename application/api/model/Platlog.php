@@ -51,7 +51,7 @@ class Platlog extends Model
 
         $count = db()->Query($sqlc);
         $totle = $count[0]["count(a.plat_id)"];//总数
-        $limit = 30;//每页条数
+        $limit = 15;//每页条数
         $pageNum = ceil ( $totle/$limit); //总页数
         //当前页
         if(array_key_exists('npage', $data))
@@ -117,7 +117,7 @@ class Platlog extends Model
         $count = db()->Query($sqlc);
 
         $totle = $count[0]["count(a.agent_id)"];//总数
-        $limit = 30;//每页条数
+        $limit = 15;//每页条数
         $pageNum = ceil ( $totle/$limit); //总页数
         //当前页
         if(array_key_exists('npage', $data))
@@ -180,7 +180,7 @@ class Platlog extends Model
         $count = db()->Query($sqlc);
 
         $totle = $count[0]["count(agent_id)"];//总数
-        $limit = 30;//每页条数
+        $limit = 15;//每页条数
         $pageNum = ceil ( $totle/$limit); //总页数
         //当前页
         if(array_key_exists('npage', $data))
@@ -243,7 +243,7 @@ class Platlog extends Model
         $count = db()->Query($sqlc);
 
         $totle = $count[0]["count(agent_id)"];//总数
-        $limit = 30;//每页条数
+        $limit = 15;//每页条数
         $pageNum = ceil ( $totle/$limit); //总页数
         //当前页
         if(array_key_exists('npage', $data))
@@ -309,7 +309,7 @@ class Platlog extends Model
 
         $count = db()->Query($sqlc);
         $totle = $count[0]["count(a.plat_id)"];//总数
-        $limit = 30;//每页条数
+        $limit = 15;//每页条数
         $pageNum = ceil ( $totle/$limit); //总页数
         //当前页
         if(array_key_exists('npage', $data))
@@ -983,7 +983,7 @@ class Platlog extends Model
             $count = db()->Query($sqlc);
 
             $totle = $count[0]["count(a.agent_id)"];//总数
-            $limit = 30;//每页条数
+            $limit = 15;//每页条数
             $pageNum = ceil ( $totle/$limit); //总页数
             //当前页
             if(array_key_exists('npage', $data))
@@ -1045,7 +1045,7 @@ class Platlog extends Model
 			   
             $count = db()->Query($sqlc);
             $totle = $count[0]["count(a.plat_id)"];//总数
-            $limit = 30;//每页条数
+            $limit = 15;//每页条数
             $pageNum = ceil ( $totle/$limit); //总页数
             //当前页
             if(array_key_exists('npage', $data))
@@ -1101,7 +1101,7 @@ class Platlog extends Model
             $count = db()->Query($sqlc);
 
             $totle = $count[0]["count(agent_id)"];//总数
-            $limit = 30;//每页条数
+            $limit = 15;//每页条数
             $pageNum = ceil ( $totle/$limit); //总页数
             //当前页
             if(array_key_exists('npage', $data))
@@ -1155,7 +1155,7 @@ class Platlog extends Model
             $count = db()->Query($sqlc);
 
             $totle = $count[0]["count(agent_id)"];//总数
-            $limit = 30;//每页条数
+            $limit = 15;//每页条数
             $pageNum = ceil ( $totle/$limit); //总页数
             //当前页
             if(array_key_exists('npage', $data))
@@ -1389,7 +1389,7 @@ class Platlog extends Model
             $sqlc =  "select count(a.plat_id)  from hand_plat_card as a,hand_agent as b  ".$where;
             $count = db()->Query($sqlc);
             $totle = $count[0]["count(a.plat_id)"];//总数
-            $limit = 30;//每页条数
+            $limit = 15;//每页条数
             $pageNum = ceil ( $totle/$limit); //总页数
             //当前页
             if(array_key_exists('npage', $data))
@@ -1499,7 +1499,7 @@ class Platlog extends Model
             $count = db()->Query($sqlc);
     
             $totle = $count[0]["count(a.agent_id)"];//总数
-            $limit = 30;//每页条数
+            $limit = 15;//每页条数
             $pageNum = ceil ( $totle/$limit); //总页数
             //当前页
             if(array_key_exists('npage', $data))
@@ -1739,7 +1739,7 @@ class Platlog extends Model
     	$count = db()->Query($sqlc);
     	
     	$totle = $count[0]["count(a.agent_id)"];//总数
-    	$limit = 30;//每页条数
+    	$limit = 15;//每页条数
     	$pageNum = ceil ( $totle/$limit); //总页数
     	//当前页
     	if(array_key_exists('npage', $data))
@@ -1796,7 +1796,7 @@ class Platlog extends Model
     	$count = db()->Query($sqlc);
     	
     	$totle = $count[0]["count(a.agent_id)"];//总数
-    	$limit = 30;//每页条数
+    	$limit = 15;//每页条数
     	$pageNum = ceil ( $totle/$limit); //总页数
     	//当前页
     	if(array_key_exists('npage', $data))
