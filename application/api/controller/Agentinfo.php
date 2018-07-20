@@ -233,6 +233,41 @@ class Agentinfo
         $res = $this->agent->newsPassword($data);
         return $res;
     }
+    /***************************和游戏交互***********************************/
+    /**
+     * 3-1根据id昵称
+     */
+    public function nickname(Request $request = null)
+    {
+        $data = $request->param();
+        if(!array_key_exists('account',$data))
+        {
+            return return_json(2,'代理信息故障');
+        }
+        if(array_key_exists('user_account',$data))
+        {
+            $dataGame['userId'] = $data['user_account'];
+            $dataGame['reqIp'] = get_client_ip();
+            $dataGame['master'] =$data['account'];
+            $dataGame['time'] = time();
+            $dataGame['auth'] = get_auth($dataGame);
+            $url ="http://".Config::get('game_url_name')."?userId=".$dataGame['userId']."&master=".$dataGame['master']."&reqIp=".$dataGame['reqIp']."&time=".$dataGame['time']."&auth=".$dataGame['auth'];
+
+        }else{
+            return return_json(2,'用户不存在');
+        }
+
+        $res = game_curl($url);
+        $res = json_decode($res,true);
+        if($res['result'] =='OK')
+        {
+            $data['name'] = $res['data']['name'];
+            return  return_json(1,'用户存在验证成功',$data);
+        }else{
+            return return_json(2,'用户验证失败');
+        }
+
+    }
 /*************之前代码******************/
 /*    /**
      * 1-1 新增代理账号
@@ -370,40 +405,7 @@ class Agentinfo
     	$res = $this->userCard->agentToLog($data);
     	return $res;
     }
-    /**
-     * 3-1根据id昵称
-     */
-    public function nickname(Request $request = null)
-    {
-        $data = $request->param();    
-        if(!array_key_exists('account',$data))
-        {
-            return return_json(2,'代理信息故障');
-        }
-        if(array_key_exists('user_account',$data))
-        {            
-            $dataGame['userId'] = $data['user_account'];
-            $dataGame['reqIp'] = get_client_ip();            
-            $dataGame['master'] =$data['account'];
-            $dataGame['time'] = time();
-            $dataGame['auth'] = get_auth($dataGame);            
-            $url ="http://".Config::get('web_url')."/msh/QueryNickName?userId=".$dataGame['userId']."&master=".$dataGame['master']."&reqIp=".$dataGame['reqIp']."&time=".$dataGame['time']."&auth=".$dataGame['auth'];
-    
-        }else{
-           return return_json(2,'用户不存在');
-        } 
-        
-         $res = game_curl($url);
-         $res = json_decode($res,true);
-         if($res['result'] =='OK')
-        {
-            $data['name'] = $res['data']['name'];
-            return  return_json(1,'用户存在验证成功',$data);
-        }else{
-            return return_json(2,'用户验证失败');
-        }
-    
-    }
+
     /* 代理下招代理 */
     /**
      * 代理新增代理

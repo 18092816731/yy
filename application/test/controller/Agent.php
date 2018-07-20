@@ -176,7 +176,7 @@ class Agent extends  \think\Controller
     }
     public function agentSendCard()
     {
-         $url = $this->webUrl.'api/agent/agentSendCard';
+/*         $url = $this->webUrl.'api/agent/agentSendCard';
         $data['id'] = 11;
         $data['user_account']  = '10002124';
         $data['account']='18092816732';
@@ -185,9 +185,9 @@ class Agent extends  \think\Controller
         $data['wx_name'] = 'xiaoxiao';
         $res = $this->curl_($url, $data);
 
-        dump($res);  
- /*         $dataGame['card'] = 10;
-        $dataGame['userId'] = '10002124';
+        dump($res);  */
+          $dataGame['card'] = 10;
+        $dataGame['userId'] = '10002265';
         $dataGame['reqIp'] = get_client_ip();
         $dataGame['master'] ='888888';
         $dataGame['time'] = time();
@@ -196,11 +196,11 @@ class Agent extends  \think\Controller
         //正式
         //$url ="http://101.201.234.189:8081/msh/AddArenaCard?userId=".$dataGame['userId']."&card=".$dataGame['card']."&reqIp=".$dataGame['reqIp']."&master=".$dataGame['master']."&time=".$dataGame['time']."&auth=".$dataGame['auth'];;
         //测试服
-        $url ="http://112.74.161.230:8081/msh/AddArenaCard?userId=".$dataGame['userId']."&card=".$dataGame['card']."&reqIp=".$dataGame['reqIp']."&master=".$dataGame['master']."&time=".$dataGame['time']."&auth=".$dataGame['auth'];;
+        $url ="http://agent1.xazxy.cn:8081/dqmj/AddArenaCard?userId=".$dataGame['userId']."&card=".$dataGame['card']."&reqIp=".$dataGame['reqIp']."&master=".$dataGame['master']."&time=".$dataGame['time']."&auth=".$dataGame['auth'];;
         
         $gameBace = game_curl($url);
         $gameBace = json_decode($gameBace,'json');
-        dump($gameBace); */  
+        dump($gameBace);
     }
     public function agent_change()
     {
