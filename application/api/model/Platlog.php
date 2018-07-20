@@ -206,7 +206,73 @@ class Platlog extends Model
         //返回结果
         return return_json(1,'平台发卡记录',$res,$page);
     }
+    /**
+     * tongji日志
+     * @param $data
+     * @return string
+     */
+    public function totle_log($data)
+    {
+        $where = ' where a.agent_id  = b.id ';
+        if(array_key_exists('account', $data)&& $data['account'] !=  '' )
+        {
+            $agentInfo = db('agent')->where(['account'=>$data['account']])->find();
+            if(!$agentInfo)
+            {
+                return return_json(2,'暂无代理信息 ');
+            }
+            $where .= ' and a.agent_id = '.$agentInfo['id'] ;
+        }
+        if(array_key_exists('start_time', $data) && !array_key_exists('end_time', $data) && $data['start_time'] !='' && $data['end_time'] !='')
+        {
+            $where .= ' and a.created_at >= '.$data['start_time'];
+        }
+        if(!array_key_exists('start_time', $data) && array_key_exists('end_time', $data) && $data['start_time'] !='')
+        {
+            $where .= ' and a.created_at <= '.$data['end_time'];
+        }
+		 if(array_key_exists('month', $data) )
+        {
+            $where .= ' and  month = '.$data['month'];
+        }
+        if(array_key_exists('start_time', $data) && array_key_exists('end_time', $data)&& $data['end_time'] !='')
+        {
+            $where .= ' and a.created_at >= '.$data['start_time'].' and a.created_at <= '.$data['end_time'];
+        }
+        //分页
+        //计算总页数
 
+        $sqlc =  "select count(a.agent_id)  from hand_month_log as a,hand_agent as b  ".$where;
+        $count = db()->Query($sqlc);
+
+        $totle = $count[0]["count(a.agent_id)"];//总数
+        $limit = 15;//每页条数
+        $pageNum = ceil ( $totle/$limit); //总页数
+        //当前页
+        if(array_key_exists('npage', $data))
+        {
+            $npage = $data['npage'];
+        }else{
+            $npage = 1;
+        }
+        $start = ($npage-1)*$limit;
+        $page = [];
+        $page['npage'] = $npage;//当前页
+        $page['totle'] = $totle;//总条数
+        $page['tpage'] = $pageNum;//总页数
+
+        $sql =  "select * from (select a.*,b.account  as  agent_name from hand_month_log as a,hand_agent as b ".$where." order by a.created_at desc) agentinfo limit ".$start.",".$limit;
+
+        $res = db()->Query($sql);
+        //判断是否为空
+        if(!$res)
+        {
+            return return_json(1,'暂无信息 ');
+        }
+        //返回结果
+        return return_json(1,'平台发卡记录',$res,$page);
+    }
+	
     /**
      * 提现日志
      * @param $data

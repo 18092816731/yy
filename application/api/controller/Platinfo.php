@@ -267,6 +267,18 @@ class Platinfo
         $res = $this->Platlog->putfeelogs($date);
         return $res;
     }
+	    /**
+ * 返利日志
+ * @param Request|null $request
+ * @return string
+ */
+    public function totle_log(request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->Platlog->totle_log($date);
+        return $res;
+    }
     /**
      * 补卡日志
      * @param Request|null $request
