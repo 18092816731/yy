@@ -79,25 +79,23 @@ class Agenttoagent
             $dataGame['master'] =$data['account'];
             $dataGame['time'] = time();
             $dataGame['auth'] = get_auth($dataGame);
-            $url ="http://".Config::get('web_url')."/msh/QueryNickName?userId=".$dataGame['userId']."&master=".$dataGame['master']."&reqIp=".$dataGame['reqIp']."&time=".$dataGame['time']."&auth=".$dataGame['auth'];
+            $url =Config::get('game_url_name')."?userId=".$dataGame['userId']."&master=".$dataGame['master']."&reqIp=".$dataGame['reqIp']."&time=".$dataGame['time']."&auth=".$dataGame['auth'];
 
         }else{
             return return_json(2,'用户不存在');
         }
 
-        //$res = game_curl($url);
-        //$res = json_decode($res,true);
-        $res['result'] = "OK";
+        $res = game_curl($url);
+        $res = json_decode($res,true);
         if($res['result'] =='OK')
         {
-            //$data['name'] = $res['data']['name'];
-             $data['name'] = '测试测试';
+            $data['name'] = $res['data']['name'];
             return  return_json(1,'用户存在验证成功',$data);
         }else{
             return return_json(2,'用户验证失败');
         }
 
-    }    
+    }  
 	/**
      * 发房卡日志
      * @param Request|null $request

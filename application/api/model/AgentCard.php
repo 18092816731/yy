@@ -390,6 +390,7 @@ class AgentCard extends Model
             {
                 return  return_json(2,'没有代理信息');
             }
+
             //代理房卡消耗 用户房卡
             $upagent['card_num']  = $agentInfo['card_num'] + $update['card_num'];
             $upagent['update_at'] =   time();
@@ -402,7 +403,7 @@ class AgentCard extends Model
 			//获取获利配置
 			$return_fee = db('refeeset')->select();
 			//给第一级分利
-									
+												
 				
 			if(isset($agentInfo['pid']) && $agentInfo['pid'] > 0){
 				
@@ -467,10 +468,12 @@ class AgentCard extends Model
 					
 			}
 
-
             //添加房卡使用日志
 			$update['fee_num'] = $fee_num;
+			//dump($update);exit;
             $result = $this->insert($update);
+			
+
             if(!$result)
             {
                 return return_json(2,'房卡数未能发放');
@@ -540,20 +543,23 @@ class AgentCard extends Model
             $upagent['card_num']  = $agentInfo['card_num'] - $update['card_num'];
             $upagent['update_at'] =   time();
             $response =  db('agent')->where(['id'=>$data['id']])->update($upagent);
+			
             if(!$response)
             {
                 return return_json(2,'房卡数未能发放');
             }
             //调取远程游戏端接口
-            //$dataGame['userId'] =$data['user_account'];
-            //$dataGame['card'] =$data['card_num'];
+            $dataGame['userId'] =$data['user_account'];
+            $dataGame['card'] = $card_num;
             $dataGame['reqIp'] =get_client_ip();
-            //$dataGame['master'] =$agentInfo['account'];
+            $dataGame['master'] =$agentInfo['account'];
             $dataGame['time'] = time();
-            //$dataGame['auth'] =get_auth($dataGame);
-/*            $url ="http://".Config::get('web_url')."/msh/AddArenaCard?userId=".$dataGame['userId']."&card=".$dataGame['card']."&master=".$dataGame['master']."&reqIp=".$dataGame['reqIp']."&time=".$dataGame['time']."&auth=".$dataGame['auth'];
+            $dataGame['auth'] =get_auth($dataGame);
+			
+            $url = Config::get('game_url_addCard')."?userId=".$dataGame['userId']."&card=".$dataGame['card']."&master=".$dataGame['master']."&reqIp=".$dataGame['reqIp']."&time=".$dataGame['time']."&auth=".$dataGame['auth'];
+			
             $gameBace = game_curl($url);
-            $gameBace = json_decode($gameBace,'json');*/
+            $gameBace = json_decode($gameBace,'json');
             $gameBace['result'] ='OK';
             if($gameBace['result'] !='OK')
             {

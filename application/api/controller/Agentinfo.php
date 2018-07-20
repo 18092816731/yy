@@ -251,7 +251,8 @@ class Agentinfo
             $dataGame['master'] =$data['account'];
             $dataGame['time'] = time();
             $dataGame['auth'] = get_auth($dataGame);
-            $url ="http://".Config::get('game_url_name')."?userId=".$dataGame['userId']."&master=".$dataGame['master']."&reqIp=".$dataGame['reqIp']."&time=".$dataGame['time']."&auth=".$dataGame['auth'];
+			          /// dump(Config::get('game_url_name'));exit;
+            $url =Config::get('game_url_name')."?userId=".$dataGame['userId']."&master=".$dataGame['master']."&reqIp=".$dataGame['reqIp']."&time=".$dataGame['time']."&auth=".$dataGame['auth'];
 
         }else{
             return return_json(2,'用户不存在');
