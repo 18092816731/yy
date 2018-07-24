@@ -4,6 +4,8 @@ namespace app\api\model;
 use think\Model;
 use think\Log;
 use think\Cache;
+use think\Verify;
+use think\db;
 
 class Agent extends Model
 {
@@ -274,15 +276,67 @@ class Agent extends Model
     } 
     public function wxLogin($data)
     {
+
         $result = $this->where(['openid' => $data['openid']])->find();
+		
         if($result) {
             $where['openid'] = $data['openid'];
-            $update['access_token'] = $data['access_token'];            
+			
+            $update['access_token'] = $data['access_token'];   
+            $update['update_at'] = time();			
             $this->where($where)->update($update);
-        } else {
+        } else {		
             $insert['openid'] = $data['openid'];
+			if($result != NULL) {
+				$insert['pid']  = $data['pid'];
+			}			
+					 
             $insert['access_token'] = $data['access_token'];
-            $this->insert($insert);
+			$insert['created_at'] = time();
+
+            $res = $this->insertGetId($insert);
+			                //qr start
+        vendor('topthink.think-image.src.Image');
+        vendor('phpqrcode.phpqrcode');
+		
+         $qr_code_path = './upload/qr_code/';
+		 
+        if (!file_exists($qr_code_path)) {
+            mkdir($qr_code_path);
+        }
+        /* 生成二维码*/ 
+        //include 'phpqrcode.php';    http://www.baiyaomall.com/mobile/User/reg.html
+        $value = 'http://agency.daque.com/agencyAdmin/index.html#/sureLogin?id='.$res; //二维码内容   http://www.xzljszm.top/#/register?code=by888888
+		
+        $errorCorrectionLevel = 'L';//容错级别   
+        $matrixPointSize = 6;//生成图片大小   
+         $qr_code_file = $qr_code_path.time().rand(1, 10000).'.png';
+
+        //生成二维码图片   
+        \QRcode::png($value, $qr_code_file, $errorCorrectionLevel, $matrixPointSize, 2);   
+		
+        $logo ='http://test.91yelang.top/images/image_icon.jpg';//准备好的logo图片   
+
+        $QR = $qr_code_file;//已经生成的原始二维码图   
+        if ($logo !== FALSE) {   
+            $QR = imagecreatefromstring(file_get_contents($QR));   
+            $logo = imagecreatefromstring(file_get_contents($logo));   
+            $QR_width = imagesx($QR);//二维码图片宽度   
+            $QR_height = imagesy($QR);//二维码图片高度   
+            $logo_width = imagesx($logo);//logo图片宽度   
+            $logo_height = imagesy($logo);//logo图片高度   
+            $logo_qr_width = $QR_width / 5;   
+            $scale = $logo_width/$logo_qr_width;   
+            $logo_qr_height = $logo_height/$scale;   
+            $from_width = ($QR_width - $logo_qr_width) / 2;   
+            //重新组合图片并调整大小   
+            imagecopyresampled($QR, $logo, $from_width, $from_width, 0, 0, $logo_qr_width,   
+            $logo_qr_height, $logo_width, $logo_height);   
+        } 
+        //qr  end
+	 $update1['code_url'] = 'http://test.91yelang.top/'.$qr_code_file;
+	  $this->where(['id'=>$res])->update($update1);
+	 
         }
     }
 
@@ -350,7 +404,7 @@ class Agent extends Model
         } else {
             $where['id'] = $data['id'];
         }
-		    $where = ' where agent_id =  '.$data['id'];//注意下面计算页数的sql
+		    $where = ' where pid =  '.$data['id'];//注意下面计算页数的sql
 		    if(array_key_exists('account',$data) && $data['account'] !='')
             {
                 $where .= ' and account like  "%'.$data["account"].'%"';
@@ -471,20 +525,26 @@ class Agent extends Model
      */
     public function platreturn($data)
     {
-
-        if(!array_key_exists('id', $data) && $data['id'] != '')
+			
+        if(!array_key_exists('id', $data))
         {
             return  return_json(2,'记录不存在');
         } else {
             $update['agent_id'] = $data['id'];
         }
-
-        if(!array_key_exists('fee_num', $data) && $data['fee_num'] != '')
+        if(!array_key_exists('fee_num', $data))
         {
             return  return_json(2,'提现数目');
         } else {
             $update['fee_num'] = $data['fee_num'];
         }
+		//判断余额是否足够 
+			$where['id'] = $data['id'];
+			$agentInfo = $this->where($where)->select();
+			if($agentInfo[0]['return_fee'] < $update['fee_num']){
+				 return  return_json(2,'余额不足');
+			}
+		
             if(!array_key_exists('phone', $data))
             {
                 return  return_json(2,'电话不能为空');
@@ -494,25 +554,28 @@ class Agent extends Model
 
             if(!array_key_exists('get_account', $data))
             {
-                return  return_json(2,'电话不能为空');
+                return  return_json(2,'获取帐号有误');
             } else {
                 $update['get_account'] = $data['get_account'];
             }
 			if(!array_key_exists('pay_type', $data))
             {
-                return  return_json(2,'电话不能为空');
+                return  return_json(2,'支付方式');
             } else {
                 $update['pay_type'] = $data['pay_type'];
             }
 						if(!array_key_exists('rname', $data))
             {
-                return  return_json(2,'电话不能为空');
+                return  return_json(2,'真名不能为空');
             } else {
                 $update['rname'] = $data['rname'];
             }
 			$update['created_at'] = time();
+			//修改余额2
 			
-		
+			$update2['return_fee'] = $agentInfo[0]['return_fee'] - $update['fee_num'];
+			$agentInfo = $this->where($where)->update($update2);
+
         $result = db('return_fee')->insert($update);
         if($result) {
              //$result1 = db('return_fee')->where($where)->find();
@@ -554,6 +617,11 @@ class Agent extends Model
             } else {
                 $update['cause'] = $data['cause'];
             }
+			//huiti
+			  $result1 = db('return_fee')->where($where)->find();
+			  $agentInfo = db('agent')->where(['id'=>$result1['agent_id']])->find();
+			  $hht['return_fee'] = $agentInfo['return_fee'] + $result1['fee_num'];
+			  db('agent')->where(['id'=>$result1['agent_id']])->update($hht);
         }
         $result = db('return_fee')->where($where)->update($update);
         if($result) {
@@ -565,7 +633,7 @@ class Agent extends Model
     }
 
     
-	/**************************************************************************之前的************************************************************************************/
+	/**************************************************************************代理 ************************************************************************************/
 
 
 	public function agentlist($data)
@@ -591,14 +659,13 @@ class Agent extends Model
 		$page['totle'] = $totle;//总条数
 		$page['tpage'] = $pageNum;//总页数
 		//开始数$start $limie
-		$sql =  "select a.id,a.account,a.rname,a.pid,a.phone,a.card_num,a.child_num,a.rebate,a.created_at,b.account as p_account from  hand_agent as a , hand_agent b ".$where."  limit ".$start.",".$limit;
+		$sql =  "select a.id,a.account,a.rname,a.pid,a.phone,a.card_num,a.child_num,a.rebate,a.created_at,b.account as p_account from  hand_agent as a , hand_agent as b ".$where."  limit ".$start.",".$limit;
 		//获取信息列表
 		$res = db()->Query($sql);
 		if(!$res)
 		{
 			return return_json(1,'暂无信息 ');
 		}
-		dump($res);
 		//获取列表相关信息
 		foreach($res as $key => $val) {
 			$where1['agent_id'] = $val['id'];
@@ -932,11 +999,11 @@ class Agent extends Model
         {
             return  return_json(2,'代理账号不能为空');
         }
-        if(!array_key_exists('rname',$data))
+        if(array_key_exists('rname',$data))
         {
            $updata['rname'] = $data['rname'];
         }
-         if(!array_key_exists('wx_name',$data))
+         if(array_key_exists('wx_name',$data))
         {
            $updata['wx_name'] = $data['wx_name'];
         }
@@ -948,6 +1015,7 @@ class Agent extends Model
         {
             $updata['pid'] = $data['pid'];
         }
+		$updata['update_at'] = time();
         $res = $this->where(['id'=>$data['id']])->update($updata);
         if (!$res && $res['status']!=1) {
             return return_json(2,'数据一样，请更改');

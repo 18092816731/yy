@@ -9,7 +9,68 @@ use think\Config;
 
 class AgentCard extends Model
 {
+	
+	    public function agentchile($data)
+    {
+        if(!array_key_exists('id', $data))
+        {		
+            return return_json(2,'暂无代理信息 ');
+        }  
+		    $agentInfo = db('agent')->where(['id'=>$data['id']])->find();
+            if(!$agentInfo)
+            {
+                return return_json(2,'暂无代理信息 ');
+            }
+            $where = '  where   pid = '.$agentInfo['id'] ;
+       if(array_key_exists('start_time', $data) && !array_key_exists('end_time', $data) && $data['start_time'] !='' && $data['end_time'] !='')
+        {
+            $where .= ' and created_at >= '.$data['start_time'];
+        }
+        if(!array_key_exists('start_time', $data) && array_key_exists('end_time', $data) && $data['start_time'] !='')
+        {
+            $where .= ' and created_at <= '.$data['end_time'];
+        }
+        if(array_key_exists('start_time', $data) && array_key_exists('end_time', $data)&& $data['end_time'] !='')
+        {
+            $where .= ' and created_at >= '.$data['start_time'].' and created_at <= '.$data['end_time'];
+        }
+        //分页
+        //计算总页数
+        $sqlc =  "select count(id)  from hand_agent   ".$where;
+        $count = db()->Query($sqlc);
+        $totle = $count[0]["count(id)"];//总数
+        $limit = 15;//每页条数
+        $pageNum = ceil ( $totle/$limit); //总页数
+        //当前页
+        if(array_key_exists('npage', $data))
+        {
+            $npage = $data['npage'];
+        }else{
+            $npage = 1;
+        }
+        $start = ($npage-1)*$limit;
+        $page = [];
+        $page['npage'] = $npage;//当前页
+        $page['totle'] = $totle;//总条数
+        $page['tpage'] = $pageNum;//总页数
+
+        $sql =  "select * from (select id,card_num,wx_name,return_num as all_card,status,created_at,return_fee from hand_agent ".$where."  order by created_at desc )   agentinfo limit ".$start.",".$limit;
+		
+
+
+        $res = db()->Query($sql);
+		
+		
+        //判断是否为空
+        if(!$res)
+        {
+            return return_json(1,'暂无信息 ');
+        }
+        //返回结果
+        return return_json(1,'平台发卡记录',$res,$page);
+    }
     /*******************购卡设置********************************/
+	
     /**
      * 购卡设置列表
      * @param $data
@@ -280,27 +341,29 @@ class AgentCard extends Model
         {
             return  return_json(2,'登录权限超时');
         }
-        if(!array_key_exists('agent_account',$data))
+        if(!array_key_exists('agent_id',$data))
         {
-            return  return_json(2,'代理不存在');
+            return  return_json(2,'登录权限超时');
         }
+
 
         //开启事务
         db::startTrans();
         try{
+			            //获取买卡 代理账号
+            $userInfo = db('agent')->where(['id'=>$data['agent_id']])->find();
             //$type = 1 平台发卡  $type = 2 代理发卡
-            if(!array_key_exists('agent_account',$data))
+            if(!array_key_exists('id',$data))
             {
                 return  return_json(2,'代理账号不能为空');
             }
             //参数验证
             $update['card_num']  = $data['card_num'];
             $update['plat_id'] = $data['id'];
-            $update['agent_account']  = $data['agent_account'];
+            $update['agent_account']  = $userInfo['account'];
+			 
             $update['created_at'] = time();
 
-            //获取买卡 代理账号
-            $userInfo = db('agent')->where(['account'=>$data['agent_account']])->find();
             if(!$userInfo)
             {
                 return  return_json(2,'代理不存在');
@@ -313,7 +376,8 @@ class AgentCard extends Model
             $upplat['update_at'] =   time();
 
 
-            $response =  db('agent')->where(['account'=>$data['agent_account']])->update($upplat);
+            $response =  db('agent')->where(['id'=>$userInfo['id']])->update($upplat);
+			
 
             if(!$response)
             {
@@ -321,6 +385,8 @@ class AgentCard extends Model
             }
             //平台补卡使用日志
             $update['status'] = 2;
+			$update['agent_id']  = $userInfo['id'];
+			$update['cause'] = $data['cause'];
             $result =  db('plat_card')->insert($update);
             if(!$result)
             {
@@ -409,18 +475,19 @@ class AgentCard extends Model
 				
 					$oneinfo = db('agent')->where(['id'=>$agentInfo['pid']])->find();
 					//更新返利
-					$oneupdate['return_fee'] = ($oneinfo['return_num'] + ($return_fee[0]['one_fee'] * $fee_num ))/100;
+					$oneupdate['return_fee'] = $oneinfo['return_fee'] + ($return_fee[0]['one_fee'] * $fee_num )/100;
 
 					$response =  db('agent')->where(['id'=>$agentInfo['pid']])->update($oneupdate);
 					
 					//添加日志
 					$one_insert['totel_fee'] = $fee_num;
-					$one_insert['fee_num'] = $oneupdate['return_fee'];
+					$one_insert['fee_num'] = ($return_fee[0]['one_fee'] * $fee_num )/100;
 				    $one_insert['agent_id'] = $agentInfo['id'];
 					$one_insert['account'] = $agentInfo['account'];
 				    $one_insert['pid'] = $oneinfo['id'];
 					$one_insert['pname'] = $oneinfo['wx_name'];
-					
+					$one_insert['save_fee'] = $oneupdate['return_fee'];
+					$one_insert['level'] = 1;
 			        $one_insert['created_at'] = time();
 										
 					$one_res = db('return_fee_log')->insert($one_insert);	
@@ -432,15 +499,17 @@ class AgentCard extends Model
 						$towinfo = db('agent')->where(['id'=>$oneinfo['pid']])->find();
 						//更新返利
 													//更新返利 
-							$towupdate['return_fee'] = ($towinfo['return_num'] + ($return_fee[0]['tow_fee'] * $fee_num ))/100;
+							$towupdate['return_fee'] = $towinfo['return_fee'] + ($return_fee[0]['tow_fee'] * $fee_num )/100;
 							$response =  db('agent')->where(['id'=>$oneinfo['pid']])->update($towupdate);
 							//添加日志
 							$tow_insert['totel_fee'] = $fee_num;
-							$tow_insert['fee_num'] = $towupdate['return_fee'];
+							$tow_insert['fee_num'] = ($return_fee[0]['tow_fee'] * $fee_num )/100;
+							$tow_insert['save_fee'] = $towupdate['return_fee'];
 							$tow_insert['agent_id'] = $agentInfo['id'];
 							$tow_insert['account'] = $agentInfo['account'];
-											    $tow_insert['pid'] = $towinfo['id'];
-					$tow_insert['pname'] = $towinfo['wx_name'];
+							$tow_insert['pid'] = $towinfo['id'];
+							$tow_insert['level'] = 2;
+				        	$tow_insert['pname'] = $towinfo['wx_name'];
 							$tow_insert['created_at'] = time();
 							$one_res = db('return_fee_log')->insert($tow_insert);	
 						
@@ -453,14 +522,16 @@ class AgentCard extends Model
 					if(isset($towinfo['pid']) && $towinfo['pid'] > 0){
 							$threeinfo = db('agent')->where(['id'=>$towinfo['pid']])->find();
 											//更新返利
-					$threeupdate['return_fee'] = ($threeinfo['return_num'] + ($return_fee[0]['three_fee'] * $fee_num ))/100;
+					$threeupdate['return_fee'] = $threeinfo['return_fee'] + ($return_fee[0]['three_fee'] * $fee_num )/100;
 					$response =  db('agent')->where(['id'=>$towinfo['pid']])->update($threeupdate);
 					//添加日志
 					$three_insert['totel_fee'] = $fee_num;
-					$three_insert['fee_num'] = $threeupdate['return_fee'];
+					$three_insert['fee_num'] = ($return_fee[0]['three_fee'] * $fee_num )/100;
 					$three_insert['agent_id'] = $agentInfo['id'];
+					$three_insert['save_fee'] = $threeupdate['return_fee'];
 					$three_insert['account'] = $agentInfo['account'];
-																    $three_insert['pid'] = $threeinfo['id'];
+					$three_insert['pid'] = $threeinfo['id'];
+					$three_insert['level'] = 3;
 					$three_insert['pname'] = $threeinfo['wx_name'];
 			        $three_insert['created_at'] = time();
 					$one_res = db('return_fee_log')->insert($three_insert);			
@@ -470,9 +541,26 @@ class AgentCard extends Model
 
             //添加房卡使用日志
 			$update['fee_num'] = $fee_num;
-			//dump($update);exit;
-            $result = $this->insert($update);
+
+            $result = db('plat_card')->insert($update);
 			
+			$monthlog = db('month_log')->where(['agent_id'=>$data['id']])->find();
+		
+			
+			if($monthlog) {
+					$monthL['agent_id'] = $data['id'];
+			$monthL['month'] = date('m');
+			$monthL['card_buy_num'] = $card_num + $monthlog['card_buy_num'];
+			$monthL['created_at'] = time();
+				$monthlog = db('month_log')->where(['agent_id'=>$data['id']])->update($monthL);
+			} else {
+					$monthL['agent_id'] = $data['id'];
+			$monthL['month'] = date('m');
+			$monthL['card_buy_num'] = $card_num;
+			$monthL['created_at'] = time();
+				$monthlog = db('month_log')->insert($monthL);
+			}
+			//dump($result);exit;
 
             if(!$result)
             {
@@ -652,7 +740,8 @@ class AgentCard extends Model
                     return return_json(2,'暂无代理信息 ');
                 }
             }   
-            $where = 'where a.agent_id  = b.id and a.agent_account = '.$agentInfo['account'];
+
+            $where = 'where a.agent_id  = b.id and a.agent_id = '.$agentInfo['id'];
 
             if(array_key_exists('start_time', $data) && !array_key_exists('end_time', $data) && $data['start_time'] !='' && $data['end_time'] !='')
             {
@@ -709,7 +798,7 @@ class AgentCard extends Model
             {
                 return  return_json(2,'代理不存在');
             }  
-            $where = ' where agent_id  ='.$data["id"];
+            $where = ' where pid  ='.$data["id"];
               if(array_key_exists('start_time', $data) && !array_key_exists('end_time', $data) && $data['start_time'] !='' && $data['end_time'] !='')
             {
                 $where .= ' and created_at >= '.$data['start_time'];

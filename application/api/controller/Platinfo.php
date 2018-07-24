@@ -298,7 +298,36 @@ class Platinfo
         $res = $this->Platlog->agentinfo($date);
         return $res;
     }
+    public function agentpaylog(request $request = null)
+    {
+        $date = $request->param();
 
+        //调取添加表
+        $res = $this->Platlog->agentpaylog($date);
+        return $res;
+    }
+	
+	    public function agentcardnumlog(request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->Platlog->agentcardnumlog($date);
+        return $res;
+    }
+	    public function agentopengame(request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->Platlog->agentopengame($date);
+        return $res;
+    }
+	    public function agentreginter(request $request = null)
+    {
+        $date = $request->param();
+        //调取添加表
+        $res = $this->Platlog->agentreginter($date);
+        return $res;
+    }
 
 /*************之前***************/
 

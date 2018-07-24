@@ -10,8 +10,103 @@ use think\Config;
 class Platlog extends Model
 {
     /***************************数据*******************************************/
+    /**
+     * 平台代理购卡日志
+     * @param $data
+     * @return string
+     */
+    public function agentpaylog($data)
+    {
+		/* 查询2015-12-01 至 2015-12-14 */
+		//if($data['type' ===1 ]){}
+		// 开始的时间戳
+		$startUnix =   strtotime(date("Y-m-01 00:00:00")); // 2015-12-01 00:00:00
+		
+		// 结束的时间戳
+		//$endUnix   =  strtotime(date("$startUnix +1 month -1 day")); // 2015-12-15 00:00:00
+		$BeginDate=date('Y-m-01', strtotime(date("Y-m-d")));
+	    $endUnix = 	 strtotime("$BeginDate +1 month -1 day");;
+		for($i = $startUnix; $i < $endUnix; $i += 86400){ // 86400为1天的秒数
+		 // 查询
+		 $ii = $i + 86400;
+		 $sql = 'select * from hand_plat_card where created_at>= '.$i.' and created_at < '.$ii;
+		 $count = db()->Query($sql);
+		 $tt[] = $count;
+		 // 执行查询
+		}
+		// 执行查询
+		foreach($tt as $k => $v) {
+			if(count($v) == 0) {
+				$datadate[$k] = $k +1; 
+				$dataseries[$k] = 0;
+				$datacard[$k] = 0;
+			} else {
+				$dataseries[$k] = 0;
+				$datacard[$k] = 0;
+				foreach($v as $key =>$vel ) {
+			    $datadate[$k] = $k +1; 
+				$dataseries[$k] = $dataseries[$k] + $vel['fee_num'];
+				$datacard[$k] = $datacard[$k] + $vel['card_num'];
+				}
+			}		
+		}
+		$dates['date'] = $datadate;
+		$dates['series'][0]['name'] = '在线支付';
+		$dates['series'][0]['num'] =  $dataseries;
+	    $dates['series'][1]['name'] = '代理进卡';
+		$dates['series'][1]['num'] =  $datacard;
+		return return_json(1,'平台发卡记录',$dates,[]);
+	}
+	    /**
+     * 平台代理购卡日志
+     * @param $data
+     * @return string
+     */
+    public function agentcardnumlog($data)
+    {
+		/* 查询2015-12-01 至 2015-12-14 */
+		//if($data['type' ===1 ]){}
+		// 开始的时间戳
+		$startUnix =   strtotime(date("Y-m-01 00:00:00")); // 2015-12-01 00:00:00
+		
+		// 结束的时间戳
+		//$endUnix   =  strtotime(date("$startUnix +1 month -1 day")); // 2015-12-15 00:00:00
+		$BeginDate=date('Y-m-01', strtotime(date("Y-m-d")));
+	    $endUnix = 	 strtotime("$BeginDate +1 month -1 day");;
+		for($i = $startUnix; $i < $endUnix; $i += 86400){ // 86400为1天的秒数
+		 // 查询
+		 $ii = $i + 86400;
+		 $sql = 'select * from hand_agent_card where created_at>= '.$i.' and created_at < '.$ii;
+		 $count = db()->Query($sql);
+		 $tt[] = $count;
+		 // 执行查询
+		}
+		// 执行查询
+		foreach($tt as $k => $v) {
+			if(count($v) == 0) {
+				$datadate[$k] = $k +1; 
+				$dataseries[$k] = 0;
+				$datacard[$k] = 0;
+			} else {
+				$dataseries[$k] = 0;
+				$datacard[$k] = 0;
+				foreach($v as $key =>$vel ) {
+			    $datadate[$k] = $k +1; 
+				$dataseries[$k] = 0;
+				$datacard[$k] = $datacard[$k] + $vel['card_num'];
+				}
+			}		
+		}
+		$dates['date'] = $datadate;
+		$dates['series'][0]['name'] = '在线支付';
+		$dates['series'][0]['num'] =  $dataseries;
+	    $dates['series'][1]['name'] = '代理进卡';
+		$dates['series'][1]['num'] =  $datacard;
+		return return_json(1,'平台发卡记录',$dates,[]);
+	}
 
     /***************************日志*******************************************/
+	
     /**
      * 平台代理购卡日志
      * @param $data
@@ -20,7 +115,7 @@ class Platlog extends Model
     public function buycardlogs($data)
     {
         //获取查询sql
-        $where = 'where  a.plat_id = b.id';
+        $where = 'where  a.agent_id = b.id';
         if(array_key_exists('account', $data)&& $data['account'] !=  '')
         {
             $agentInfo = db('agent')->where(['account'=>$data['account']])->find();
@@ -29,6 +124,14 @@ class Platlog extends Model
                 return return_json(2,'暂无代理信息 ');
             }
             $where .= ' and a.agent_account = '.$data['account'] ;
+        }
+				if(array_key_exists('id',$data) && $data['id'] !='')
+        {
+            $where .= ' and  b.id  = '.$data["id"];
+        }
+		if(array_key_exists('pid',$data) && $data['pid'] !='')
+        {
+            $where .= ' and  b.pid  = '.$data["pid"];
         }
 
         if(array_key_exists('start_time', $data) && !array_key_exists('end_time', $data) && $data['start_time'] !='' && $data['end_time'] !='')
@@ -98,6 +201,18 @@ class Platlog extends Model
             }
             $where .= ' and a.agent_id = '.$agentInfo['id'] ;
         }
+						if(array_key_exists('id',$data) && $data['id'] !='')
+        {
+            $where .= ' and  b.id  = '.$data["id"];
+        }
+		if(array_key_exists('user_account',$data) && $data['user_account'] !='')
+        {
+            $where .= ' and  a.user_account  = '.$data["user_account"];
+        }
+		if(array_key_exists('pid',$data) && $data['pid'] !='')
+        {
+            $where .= ' and  b.pid  = '.$data["pid"];
+        }
         if(array_key_exists('start_time', $data) && !array_key_exists('end_time', $data) && $data['start_time'] !='' && $data['end_time'] !='')
         {
             $where .= ' and a.created_at >= '.$data['start_time'];
@@ -161,6 +276,14 @@ class Platlog extends Model
             }
             $where .= ' and agent_id = '.$agentInfo['id'] ;
         }
+								if(array_key_exists('id',$data) && $data['id'] !='')
+        {
+            $where .= ' and  id  = '.$data["id"];
+        }
+		if(array_key_exists('pid',$data) && $data['pid'] !='')
+        {
+            $where .= ' and  pid  = '.$data["pid"];
+        }
         if(array_key_exists('start_time', $data) && !array_key_exists('end_time', $data) && $data['start_time'] !='' && $data['end_time'] !='')
         {
             $where .= ' and created_at >= '.$data['start_time'];
@@ -195,7 +318,7 @@ class Platlog extends Model
         $page['totle'] = $totle;//总条数
         $page['tpage'] = $pageNum;//总页数
 
-        $sql =  "select * from (select id,agent_id,totel_fee,fee_num,created_at,pname,pid from hand_return_fee_log ".$where." order by created_at desc) agentinfo limit ".$start.",".$limit;
+        $sql =  "select * from (select id,agent_id,totel_fee,fee_num,created_at,pname,pid,account,save_fee,level from hand_return_fee_log ".$where." order by created_at desc) agentinfo limit ".$start.",".$limit;
 
         $res = db()->Query($sql);
         //判断是否为空
@@ -223,6 +346,14 @@ class Platlog extends Model
             }
             $where .= ' and a.agent_id = '.$agentInfo['id'] ;
         }
+		if(array_key_exists('id',$data) && $data['id'] !='')
+        {
+            $where .= ' and  b.id  = '.$data["id"];
+        }
+		if(array_key_exists('pid',$data) && $data['pid'] !='')
+        {
+            $where .= ' and  b.pid  = '.$data["pid"];
+        }
         if(array_key_exists('start_time', $data) && !array_key_exists('end_time', $data) && $data['start_time'] !='' && $data['end_time'] !='')
         {
             $where .= ' and a.created_at >= '.$data['start_time'];
@@ -238,6 +369,14 @@ class Platlog extends Model
         if(array_key_exists('start_time', $data) && array_key_exists('end_time', $data)&& $data['end_time'] !='')
         {
             $where .= ' and a.created_at >= '.$data['start_time'].' and a.created_at <= '.$data['end_time'];
+        }
+	    if(array_key_exists('id',$data) && $data['id'] !='')
+        {
+            $where .= ' and  id  = '.$data["id"];
+        }
+		if(array_key_exists('pid',$data) && $data['pid'] !='')
+        {
+            $where .= ' and  pid  = '.$data["pid"];
         }
         //分页
         //计算总页数
@@ -290,6 +429,14 @@ class Platlog extends Model
             }
             $where .= ' and agent_id = '.$agentInfo['id'] ;
         }
+			  if(array_key_exists('id',$data) && $data['id'] !='')
+        {
+            $where .= ' and  id  = '.$data["id"];
+        }
+/**		if(array_key_exists('pid',$data) && $data['pid'] !='')
+        {
+            $where .= ' and  pid  = '.$data["pid"];
+        }**/
         if(array_key_exists('start_time', $data) && !array_key_exists('end_time', $data) && $data['start_time'] !='' && $data['end_time'] !='')
         {
             $where .= ' and created_at >= '.$data['start_time'];
@@ -354,6 +501,14 @@ class Platlog extends Model
             }
             $where .= ' and a.agent_account = '.$data['account'] ;
         }
+	  if(array_key_exists('id',$data) && $data['id'] !='')
+        {
+            $where .= ' and  b.id  = '.$data["id"];
+        }
+		if(array_key_exists('pid',$data) && $data['pid'] !='')
+        {
+            $where .= ' and  b.pid  = '.$data["pid"];
+        }
 
         if(array_key_exists('start_time', $data) && !array_key_exists('end_time', $data) && $data['start_time'] !='' && $data['end_time'] !='')
         {
@@ -389,7 +544,7 @@ class Platlog extends Model
         $page['totle'] = $totle;//总条数
         $page['tpage'] = $pageNum;//总页数
 
-        $sql =  "select * from (select a.agent_id,a.fee_num,a.plat_id,a.card_num,b.wx_name,a.created_at,a.agent_account,b.account  as  agent_name from hand_plat_card as a,hand_agent as b ".$where." order by a.created_at desc) agentinfo limit ".$start.",".$limit;
+        $sql =  "select * from (select a.agent_id,a.fee_num,a.plat_id,a.card_num,b.wx_name,a.created_at,a.agent_account,a.cause ,b.account as  agent_name from hand_plat_card as a,hand_agent as b ".$where." order by a.created_at desc) agentinfo limit ".$start.",".$limit;
 
 
         $res = db()->Query($sql);
@@ -406,9 +561,30 @@ class Platlog extends Model
     {
         if(array_key_exists('account',$data) && $data['account'] !='')
         {
-            $where = 'where  account like  "%'.$data["account"].'%" and where pid > 0';
+            $where = 'where  status = 1 and account like  "%'.$data["account"].'%" and where pid > 0';
         }else{
-            $where = 'where pid > 0';
+            $where = 'where status = 1 and pid > 0';
+        }
+		if(array_key_exists('id',$data) && $data['id'] !='')
+        {
+            $where .= ' and  id  = '.$data["id"];
+        }
+		if(array_key_exists('pid',$data) && $data['pid'] !='')
+        {
+            $where .= ' and  pid  = '.$data["pid"];
+        }
+		
+        if(array_key_exists('start_time', $data) && !array_key_exists('end_time', $data) && $data['start_time'] !='' && $data['end_time'] !='')
+        {
+            $where .= ' and  created_at >= '.$data['start_time'];
+        }
+        if(!array_key_exists('start_time', $data) && array_key_exists('end_time', $data) && $data['start_time'] !='')
+        {
+            $where .= ' and  created_at <= '.$data['end_time'];
+        }
+        if(array_key_exists('start_time', $data) && array_key_exists('end_time', $data)&& $data['end_time'] !='')
+        {
+            $where .= ' and created_at >= '.$data['start_time'].' and  created_at <= '.$data['end_time'];
         }
 
         //分页
@@ -441,6 +617,13 @@ class Platlog extends Model
                 $res[$key]['last_send_card'] = '';
             }else{
                 $res[$key]['last_send_card'] = $ress[0]['created_at'];
+            }
+			$resss = db('plat_card')->where(['agent_id'=>$vel['id']])->order('created_at desc')->limit(1)->select();
+			
+            if(!$resss) {
+                $res[$key]['last_get_card'] = '';
+            }else{
+                $res[$key]['last_get_card'] = $resss[0]['created_at'];
             }
         }
         if(!$res)
@@ -1029,6 +1212,7 @@ class Platlog extends Model
                 return  return_json(2,'代理不存在');
             }  
             $where = ' where a.agent_id  = b.id and a.agent_id = '.$data["id"];
+			
               if(array_key_exists('start_time', $data) && !array_key_exists('end_time', $data) && $data['start_time'] !='' && $data['end_time'] !='')
             {
                 $where .= ' and a.created_at >= '.$data['start_time'];
@@ -1037,6 +1221,7 @@ class Platlog extends Model
             {
                 $where .= ' and a.created_at <= '.$data['end_time'];
             }
+			
             if(array_key_exists('start_time', $data) && array_key_exists('end_time', $data)&& $data['end_time'] !='')
             {
                 $where .= ' and a.created_at >= '.$data['start_time'].' and a.created_at <= '.$data['end_time'];

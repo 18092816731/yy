@@ -41,22 +41,64 @@ class Wx  extends \think\Controller
     public function getopenid(Request $request = null)
     {
        $data = $request->param();
-	   //dump($data["code"]);exit;
+	 
+			
 	   $wxDate = file_get_contents('https://api.weixin.qq.com/sns/oauth2/access_token?appid=wxf0c73cda0cc6c9c0&secret=32872c10fd21073464b4b3a63d960c86&code='.$data["code"].'&grant_type=authorization_code');
-	   $wxInfo = json_decode($wxDate,'json');
+ 
+	  $wxInfo = json_decode($wxDate,'json');	
+   if(array_key_exists('id',$data))
+            {  
+                $wxInfo['pid'] = $data["id"];
+            }  	  
 	   $access_token = $wxInfo['access_token'];
 	   $openid = $wxInfo['openid'];
-	   $res = $this->agent->wxLogin($wxInfo);
-	    
-        header("Location:http://agency.daque.com/agencyAdmin/index.html#/getOpenId?openid=".$openid);
+	  
+	   $res = $this->agent->wxLogin($wxInfo); 
+	    	if(array_key_exists('id',$data))
+            {
+				  header("Location:http://agency.daque.com/agencyAdmin/index.html#/getOpenId?openid=".$openid."&pid=".$data["id"]);
+				  exit;
+            } 
+			 header("Location:http://agency.daque.com/agencyAdmin/index.html#/getOpenId?openid=".$openid);
+			 
+        //header("Location:http://agency.daque.com/agencyAdmin/index.html#/getOpenId?openid=".$openid);
 	    exit;
 	   //$game_curl = game_curl('https://api.weixin.qq.com/sns/oauth2/access_token?appid=wxf0c73cda0cc6c9c0&secret=32872c10fd21073464b4b3a63d960c86&code=0017vUiI12ahP70ZGXlI1WA0jI17vUi3&grant_type=authorization_code');
 	  // dump($wxDate);
 	 
-	   $url ='https://api.weixin.qq.com/sns/oauth2/access_token?appid=wxf0c73cda0cc6c9c0&secret=32872c10fd21073464b4b3a63d960c86&code='.$data['code'].'&grant_type=authorization_code';
-	   //$this->curl_('https://api.weixin.qq.com/sns/oauth2/access_token?appid=APPID&secret=SECRET&code=CODE&grant_type=authorization_code');
+	   //$url ='https://api.weixin.qq.com/sns/oauth2/access_token?appid=wxf0c73cda0cc6c9c0&secret=32872c10fd21073464b4b3a63d960c86&code='.$data['code'].'&grant_type=authorization_code';
+	   $this->curl_('https://api.weixin.qq.com/sns/oauth2/access_token?appid=APPID&secret=SECRET&code=CODE&grant_type=authorization_code');
 	   $game_curl = game_curl($url);
 	  dump($game_curl);
+    }
+	/**
+	*惟信第三方网站
+	*
+	*/
+	    public function get_openid(Request $request = null)
+    {
+        $data = $request->param();
+        
+	        $wxDate = file_get_contents('https://api.weixin.qq.com/sns/oauth2/access_token?appid=wx352a639a5347dd49&secret=19f266cb1810a74e6b23db701aa7a865&code='.$data["code"].'&grant_type=authorization_code');
+
+       // $wxDate = file_get_contents('https://api.weixin.qq.com/sns/oauth2/access_token?appid=wxf0c73cda0cc6c9c0&secret=32872c10fd21073464b4b3a63d960c86&code='.$data["code"].'&grant_type=authorization_code');
+        $wxInfo = json_decode($wxDate,'json');
+        $access_token = $wxInfo['access_token'];
+		$refresh_token = $wxInfo['refresh_token'];
+		file_put_contents('access_token.txt',$access_token);
+		file_put_contents('refresh_token.txt',$access_token);
+        $openid = $wxInfo['openid'];
+        $res = $this->agent->wxLogin($wxInfo);
+         
+        header("Location:http://agency.daque.com/agencyAdmin/index.html#/getOpenId?openid=".$openid);
+        exit;
+        //$game_curl = game_curl('https://api.weixin.qq.com/sns/oauth2/access_token?appid=wxf0c73cda0cc6c9c0&secret=32872c10fd21073464b4b3a63d960c86&code=0017vUiI12ahP70ZGXlI1WA0jI17vUi3&grant_type=authorization_code');
+        // dump($wxDate);
+    
+        $url ='https://api.weixin.qq.com/sns/oauth2/access_token?appid=wxf0c73cda0cc6c9c0&secret=32872c10fd21073464b4b3a63d960c86&code='.$data['code'].'&grant_type=authorization_code';
+        //$this->curl_('https://api.weixin.qq.com/sns/oauth2/access_token?appid=APPID&secret=SECRET&code=CODE&grant_type=authorization_code');
+        $game_curl = game_curl($url);
+        dump($game_curl);
     }
 	public function curl_($url,$data)
     {

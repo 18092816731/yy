@@ -147,6 +147,19 @@ class Agenttoagent
         $res = $this->userCard->put_fee_logs($data);
         return $res;
     }
+		    /**
+     * tixianrizhi
+     * @param Request|null $request
+     * @return string
+     */
+    public function agentchile(Request $request = null)
+    {
+        //获取参数
+        $data = $request->param();
+        //调取添加表
+        $res = $this->userCard->agentchile($data);
+        return $res;
+    }
     /*************************之前的*******************************/
     /**
      * 1-1 新增代理账号
