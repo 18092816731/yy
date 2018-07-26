@@ -98,9 +98,9 @@ class Platlog extends Model
 			}		
 		}
 		$dates['date'] = $datadate;
-		$dates['series'][0]['name'] = '在线支付';
+		$dates['series'][0]['name'] = '代理零售';
 		$dates['series'][0]['num'] =  $dataseries;
-	    $dates['series'][1]['name'] = '代理进卡';
+	    $dates['series'][1]['name'] = '用户消耗';
 		$dates['series'][1]['num'] =  $datacard;
 		return return_json(1,'平台发卡记录',$dates,[]);
 	}
@@ -400,7 +400,7 @@ class Platlog extends Model
         $page['totle'] = $totle;//总条数
         $page['tpage'] = $pageNum;//总页数
 
-        $sql =  "select * from (select a.*,b.account  as  agent_name from hand_month_log as a,hand_agent as b ".$where." order by a.created_at desc) agentinfo limit ".$start.",".$limit;
+        $sql =  "select * from (select a.*,b.return_fee,b.child_num,b.account  as  agent_name from hand_month_log as a,hand_agent as b ".$where." order by a.created_at desc) agentinfo limit ".$start.",".$limit;
 
         $res = db()->Query($sql);
         //判断是否为空

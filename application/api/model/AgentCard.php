@@ -660,6 +660,27 @@ class AgentCard extends Model
             {
                 return return_json(2,'房卡数未能发放');
             }
+			       //添加房卡使用日志
+			$update['fee_num'] = $fee_num;
+
+            //$result = db('plat_card')->insert($update);
+			
+			$monthlog = db('month_log')->where(['agent_id'=>$data['id']])->find();
+		
+			
+			if($monthlog) {
+					$monthL['agent_id'] = $data['id'];
+			$monthL['month'] = date('m');
+			$monthL['card_send_num'] = $card_num + $monthlog['card_send_num'];
+			$monthL['created_at'] = time();
+				$monthlog = db('month_log')->where(['agent_id'=>$data['id']])->update($monthL);
+			} else {
+					$monthL['agent_id'] = $data['id'];
+			$monthL['month'] = date('m');
+			$monthL['card_send_num'] = $card_num;
+			$monthL['created_at'] = time();
+				$monthlog = db('month_log')->insert($monthL);
+			}
             //执行给用户加房卡（暂时不用）
             // 提交事务
             Db::commit();

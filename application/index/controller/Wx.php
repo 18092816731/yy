@@ -78,27 +78,27 @@ class Wx  extends \think\Controller
 	    public function get_openid(Request $request = null)
     {
         $data = $request->param();
+		$code = $_GET['code'];
+        $state = $_GET['state'];
         
-	        $wxDate = file_get_contents('https://api.weixin.qq.com/sns/oauth2/access_token?appid=wx352a639a5347dd49&secret=19f266cb1810a74e6b23db701aa7a865&code='.$data["code"].'&grant_type=authorization_code');
 
-       // $wxDate = file_get_contents('https://api.weixin.qq.com/sns/oauth2/access_token?appid=wxf0c73cda0cc6c9c0&secret=32872c10fd21073464b4b3a63d960c86&code='.$data["code"].'&grant_type=authorization_code');
-        $wxInfo = json_decode($wxDate,'json');
-        $access_token = $wxInfo['access_token'];
-		$refresh_token = $wxInfo['refresh_token'];
-		file_put_contents('access_token.txt',$access_token);
-		file_put_contents('refresh_token.txt',$access_token);
-        $openid = $wxInfo['openid'];
-        $res = $this->agent->wxLogin($wxInfo);
-         
-        header("Location:http://agency.daque.com/agencyAdmin/index.html#/getOpenId?openid=".$openid);
-        exit;
-        //$game_curl = game_curl('https://api.weixin.qq.com/sns/oauth2/access_token?appid=wxf0c73cda0cc6c9c0&secret=32872c10fd21073464b4b3a63d960c86&code=0017vUiI12ahP70ZGXlI1WA0jI17vUi3&grant_type=authorization_code');
-        // dump($wxDate);
-    
-        $url ='https://api.weixin.qq.com/sns/oauth2/access_token?appid=wxf0c73cda0cc6c9c0&secret=32872c10fd21073464b4b3a63d960c86&code='.$data['code'].'&grant_type=authorization_code';
-        //$this->curl_('https://api.weixin.qq.com/sns/oauth2/access_token?appid=APPID&secret=SECRET&code=CODE&grant_type=authorization_code');
-        $game_curl = game_curl($url);
-        dump($game_curl);
+/*根据code获取用户openid*/
+$url = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=wxf0c73cda0cc6c9c0&secret=32872c10fd21073464b4b3a63d960c86&code=".$code."&grant_type=authorization_code";
+ 
+$abs = file_get_contents($url);
+$obj=json_decode($abs);
+$access_token = $obj->access_token;
+$openid = $obj->openid;
+/*根据code获取用户openid end*/
+ 
+ 
+/*根据用户openid获取用户基本信息*/
+$abs_url = "https://api.weixin.qq.com/sns/userinfo?access_token=".$access_token."&openid=".$openid."&lang=zh_CN";
+$abs_url_data = file_get_contents($abs_url);
+$obj_data=json_decode($abs_url_data);
+dump($obj_data);
+
+
     }
 	public function curl_($url,$data)
     {

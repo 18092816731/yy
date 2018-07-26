@@ -144,28 +144,28 @@ class Agent extends Model
 		}
 		$result = db('agent')->where(['id'=>$res['pid']])->find();
 	    if(!$res) {
-			$res['pname'] = '';
+			$res['pname'] = '0';
 		}else{
 			$res['pname'] = $result['account'];
 		}
 		
 		$ress = db('agent_card')->where(['agent_id'=>$res['id']])->order('created_at desc')->limit(1)->select();
 	    if(!$ress) {
-			$res['last_send_card'] = '';
+			$res['last_send_card'] = '0';
 		}else{
 			$res['last_send_card'] = $ress[0]['created_at'];
 		}
 
-		 $resss = db('plat_card')->where(['agent_account'=>$res['account']])->order('created_at desc')->limit(1)->select();
+		 $resss = db('plat_card')->where(['agent_id'=>$res['id']])->order('created_at desc')->limit(1)->select();
 		    if(!$resss) {
-			$res['last_buy_card'] = '';
+			$res['last_buy_card'] = '0';
 		}else{
 			$res['last_buy_card'] = $resss[0]['created_at'];
 		}
 		
 		$count = db('agent')->where(['pid'=>$data['id']])->count();
 				    if(!$count) {
-			$res['child_count'] = '';
+			$res['child_count'] = '0';
 		}else{
 			$res['child_count'] = $count;
 		}
@@ -280,8 +280,9 @@ class Agent extends Model
         $result = $this->where(['openid' => $data['openid']])->find();
 		
         if($result) {
-            $where['openid'] = $data['openid'];
-			
+            $where['openid'] = $data['openid'];	
+            $childnum = db('agent')->where(['pid'=>$result['id']])->count();	
+            $update['child_num'] = $childnum;	
             $update['access_token'] = $data['access_token'];   
             $update['update_at'] = time();			
             $this->where($where)->update($update);
