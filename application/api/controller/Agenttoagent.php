@@ -53,8 +53,13 @@ class Agenttoagent
      */
     public function agentGetCard(Request $request = null)
     {
+/*        require APP_PATH.'../vendor/wx/weixin.class.php';
+        $weixin  = new \weixin();
+        $code_str =$weixin->getJSAPI();
+        exit;*/
         //获取参数
         $data = $request->param();
+
         //调取添加表
         $res = $this->userCard->agent_get_card($data,2);
         return $res;

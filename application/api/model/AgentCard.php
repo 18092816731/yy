@@ -411,6 +411,7 @@ class AgentCard extends Model
      */
     public function agent_get_card($data)
     {
+
         Log::info("调用发送房卡接口");
         //字段验证
         if(!array_key_exists('card_id',$data))
@@ -425,9 +426,10 @@ class AgentCard extends Model
 
         //开启事务
         db::startTrans();
-        try{
+        try {
+
             //获取购买数额（fee_num）（card_num）
-            $feeInfo = db('buy_card_set')->where(['id'=>$data['card_id']])->find();
+            $feeInfo = db('buy_card_set')->where(['id' => $data['card_id']])->find();
             $card_num = $feeInfo['card_num'];//房卡数目
             $fee_num = $feeInfo['fee_num'];
 
@@ -435,146 +437,147 @@ class AgentCard extends Model
 
             //日志记录
 
-/*             if(!array_key_exists('user_account',$data))
-            {
-                return  return_json(2,'用户账号不能为空');
-            }
-            if(!array_key_exists('wx_name',$data))
-            {
-                return  return_json(2,'微信不存在');
-            } */
+            /*             if(!array_key_exists('user_account',$data))
+                        {
+                            return  return_json(2,'用户账号不能为空');
+                        }
+                        if(!array_key_exists('wx_name',$data))
+                        {
+                            return  return_json(2,'微信不存在');
+                        } */
             //参数验证
-            $update['card_num']  = $card_num;
+            $update['card_num'] = $card_num;
             $update['agent_id'] = $data['id']; //代理id
-/*             $update['user_account']  = $data['user_account'];//购买房卡用户账号
-            $update['wx_name'] = $data['wx_name']; */
+            /*             $update['user_account']  = $data['user_account'];//购买房卡用户账号
+                        $update['wx_name'] = $data['wx_name']; */
             $update['status'] = 2;//添加纪录
             $update['created_at'] = time();
             //获取代理信息
-            $agentInfo = db('agent')->where(['id'=>$data['id']])->find();
-            if(!$agentInfo)
-            {
-                return  return_json(2,'没有代理信息');
+            $agentInfo = db('agent')->where(['id' => $data['id']])->find();
+
+            if (!$agentInfo) {
+                return return_json(2, '没有代理信息');
             }
 
-            //代理房卡消耗 用户房卡
-            $upagent['card_num']  = $agentInfo['card_num'] + $update['card_num'];
-            $upagent['update_at'] =   time();
-            $response =  db('agent')->where(['id'=>$data['id']])->update($upagent);
-			
-            if(!$response)
-            {
-                return return_json(2,'房卡数未能发放');
+/*            //代理房卡消耗 用户房卡
+            $upagent['card_num'] = $agentInfo['card_num'] + $update['card_num'];
+            $upagent['update_at'] = time();
+            $response = db('agent')->where(['id' => $data['id']])->update($upagent);
+
+            if (!$response) {
+                return return_json(2, '房卡数未能发放');
             }
-			//获取获利配置
-			$return_fee = db('refeeset')->select();
-			//给第一级分利
-												
-				
-			if(isset($agentInfo['pid']) && $agentInfo['pid'] > 0){
-				
-					$oneinfo = db('agent')->where(['id'=>$agentInfo['pid']])->find();
-					//更新返利
-					$oneupdate['return_fee'] = $oneinfo['return_fee'] + ($return_fee[0]['one_fee'] * $fee_num )/100;
+            //获取获利配置
+            $return_fee = db('refeeset')->select();
+            //给第一级分利
 
-					$response =  db('agent')->where(['id'=>$agentInfo['pid']])->update($oneupdate);
-					
-					//添加日志
-					$one_insert['totel_fee'] = $fee_num;
-					$one_insert['fee_num'] = ($return_fee[0]['one_fee'] * $fee_num )/100;
-				    $one_insert['agent_id'] = $agentInfo['id'];
-					$one_insert['account'] = $agentInfo['account'];
-				    $one_insert['pid'] = $oneinfo['id'];
-					$one_insert['pname'] = $oneinfo['wx_name'];
-					$one_insert['save_fee'] = $oneupdate['return_fee'];
-					$one_insert['level'] = 1;
-			        $one_insert['created_at'] = time();
-										
-					$one_res = db('return_fee_log')->insert($one_insert);	
-					
 
-								//给第二级分利
-				if(isset($oneinfo['pid']) && $oneinfo['pid'] > 0){
-					
-						$towinfo = db('agent')->where(['id'=>$oneinfo['pid']])->find();
-						//更新返利
-													//更新返利 
-							$towupdate['return_fee'] = $towinfo['return_fee'] + ($return_fee[0]['tow_fee'] * $fee_num )/100;
-							$response =  db('agent')->where(['id'=>$oneinfo['pid']])->update($towupdate);
-							//添加日志
-							$tow_insert['totel_fee'] = $fee_num;
-							$tow_insert['fee_num'] = ($return_fee[0]['tow_fee'] * $fee_num )/100;
-							$tow_insert['save_fee'] = $towupdate['return_fee'];
-							$tow_insert['agent_id'] = $agentInfo['id'];
-							$tow_insert['account'] = $agentInfo['account'];
-							$tow_insert['pid'] = $towinfo['id'];
-							$tow_insert['level'] = 2;
-				        	$tow_insert['pname'] = $towinfo['wx_name'];
-							$tow_insert['created_at'] = time();
-							$one_res = db('return_fee_log')->insert($tow_insert);	
-						
-						
-						//添加日志					
-						
-				
-				} 
-									//给第三级分利
-					if(isset($towinfo['pid']) && $towinfo['pid'] > 0){
-							$threeinfo = db('agent')->where(['id'=>$towinfo['pid']])->find();
-											//更新返利
-					$threeupdate['return_fee'] = $threeinfo['return_fee'] + ($return_fee[0]['three_fee'] * $fee_num )/100;
-					$response =  db('agent')->where(['id'=>$towinfo['pid']])->update($threeupdate);
-					//添加日志
-					$three_insert['totel_fee'] = $fee_num;
-					$three_insert['fee_num'] = ($return_fee[0]['three_fee'] * $fee_num )/100;
-					$three_insert['agent_id'] = $agentInfo['id'];
-					$three_insert['save_fee'] = $threeupdate['return_fee'];
-					$three_insert['account'] = $agentInfo['account'];
-					$three_insert['pid'] = $threeinfo['id'];
-					$three_insert['level'] = 3;
-					$three_insert['pname'] = $threeinfo['wx_name'];
-			        $three_insert['created_at'] = time();
-					$one_res = db('return_fee_log')->insert($three_insert);			
-					}			
-					
-			}
+            if (isset($agentInfo['pid']) && $agentInfo['pid'] > 0) {
+
+                $oneinfo = db('agent')->where(['id' => $agentInfo['pid']])->find();
+                //更新返利
+                $oneupdate['return_fee'] = $oneinfo['return_fee'] + ($return_fee[0]['one_fee'] * $fee_num) / 100;
+
+                $response = db('agent')->where(['id' => $agentInfo['pid']])->update($oneupdate);
+
+                //添加日志
+                $one_insert['totel_fee'] = $fee_num;
+                $one_insert['fee_num'] = ($return_fee[0]['one_fee'] * $fee_num) / 100;
+                $one_insert['agent_id'] = $agentInfo['id'];
+                $one_insert['account'] = $agentInfo['account'];
+                $one_insert['pid'] = $oneinfo['id'];
+                $one_insert['pname'] = $oneinfo['wx_name'];
+                $one_insert['save_fee'] = $oneupdate['return_fee'];
+                $one_insert['level'] = 1;
+                $one_insert['created_at'] = time();
+
+                $one_res = db('return_fee_log')->insert($one_insert);
+
+
+                //给第二级分利
+                if (isset($oneinfo['pid']) && $oneinfo['pid'] > 0) {
+
+                    $towinfo = db('agent')->where(['id' => $oneinfo['pid']])->find();
+                    //更新返利
+                    //更新返利
+                    $towupdate['return_fee'] = $towinfo['return_fee'] + ($return_fee[0]['tow_fee'] * $fee_num) / 100;
+                    $response = db('agent')->where(['id' => $oneinfo['pid']])->update($towupdate);
+                    //添加日志
+                    $tow_insert['totel_fee'] = $fee_num;
+                    $tow_insert['fee_num'] = ($return_fee[0]['tow_fee'] * $fee_num) / 100;
+                    $tow_insert['save_fee'] = $towupdate['return_fee'];
+                    $tow_insert['agent_id'] = $agentInfo['id'];
+                    $tow_insert['account'] = $agentInfo['account'];
+                    $tow_insert['pid'] = $towinfo['id'];
+                    $tow_insert['level'] = 2;
+                    $tow_insert['pname'] = $towinfo['wx_name'];
+                    $tow_insert['created_at'] = time();
+                    $one_res = db('return_fee_log')->insert($tow_insert);
+
+
+                    //添加日志
+
+
+                }
+                //给第三级分利
+                if (isset($towinfo['pid']) && $towinfo['pid'] > 0) {
+                    $threeinfo = db('agent')->where(['id' => $towinfo['pid']])->find();
+                    //更新返利
+                    $threeupdate['return_fee'] = $threeinfo['return_fee'] + ($return_fee[0]['three_fee'] * $fee_num) / 100;
+                    $response = db('agent')->where(['id' => $towinfo['pid']])->update($threeupdate);
+                    //添加日志
+                    $three_insert['totel_fee'] = $fee_num;
+                    $three_insert['fee_num'] = ($return_fee[0]['three_fee'] * $fee_num) / 100;
+                    $three_insert['agent_id'] = $agentInfo['id'];
+                    $three_insert['save_fee'] = $threeupdate['return_fee'];
+                    $three_insert['account'] = $agentInfo['account'];
+                    $three_insert['pid'] = $threeinfo['id'];
+                    $three_insert['level'] = 3;
+                    $three_insert['pname'] = $threeinfo['wx_name'];
+                    $three_insert['created_at'] = time();
+                    $one_res = db('return_fee_log')->insert($three_insert);
+                }
+
+            }*/
 
             //添加房卡使用日志
-			$update['fee_num'] = $fee_num;
-
+            $update['fee_num'] = $fee_num;
+            $update['card_id'] = $data['card_id'];
+            $update['order_code'] = get_order();
             $result = db('plat_card')->insert($update);
-			
-			$monthlog = db('month_log')->where(['agent_id'=>$data['id']])->find();
-		
-			
-			if($monthlog) {
-					$monthL['agent_id'] = $data['id'];
-			$monthL['month'] = date('m');
-			$monthL['card_buy_num'] = $card_num + $monthlog['card_buy_num'];
-			$monthL['created_at'] = time();
-				$monthlog = db('month_log')->where(['agent_id'=>$data['id']])->update($monthL);
-			} else {
-					$monthL['agent_id'] = $data['id'];
-			$monthL['month'] = date('m');
-			$monthL['card_buy_num'] = $card_num;
-			$monthL['created_at'] = time();
-				$monthlog = db('month_log')->insert($monthL);
-			}
-			//dump($result);exit;
+/*            $monthlog = db('month_log')->where(['agent_id' => $data['id']])->find();
 
-            if(!$result)
-            {
-                return return_json(2,'房卡数未能发放');
+
+            if ($monthlog) {
+                $monthL['agent_id'] = $data['id'];
+                $monthL['month'] = date('m');
+                $monthL['card_buy_num'] = $card_num + $monthlog['card_buy_num'];
+                $monthL['created_at'] = time();
+                $monthlog = db('month_log')->where(['agent_id' => $data['id']])->update($monthL);
+            } else {
+                $monthL['agent_id'] = $data['id'];
+                $monthL['month'] = date('m');
+                $monthL['card_buy_num'] = $card_num;
+                $monthL['created_at'] = time();
+                $monthlog = db('month_log')->insert($monthL);
+
+            }*/
+            //dump($result);exit;
+
+            if (!$result) {
+                return return_json(2, '下单失败');
             }
+            $return['fee_num'] = $update['fee_num'];
+            $return['order_code'] = $update['order_code'];
             //执行给用户加房卡（暂时不用）
             // 提交事务
             Db::commit();
-            return return_json(1,'房卡数已发放');
+            return return_json(1, '下单成功',$return);
         } catch (\Exception $e) {
-            // 回滚事务
-            Db::rollback();
-            return return_json(2,'房卡数未能发放');
-        }
+                // 回滚事务
+                Db::rollback();
+                return return_json(2,'下单失败');
+            }
     }
     /**
      * 代理发卡

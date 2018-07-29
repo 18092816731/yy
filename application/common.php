@@ -8,7 +8,15 @@
 // +----------------------------------------------------------------------
 // | Author: 流年 <liu21st@gmail.com>
 // +----------------------------------------------------------------------
-
+function dd($data){
+    dump($data);exit;
+}
+function get_order()
+{
+    $yCode = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
+    $orderSn = $yCode[intval(date('Y')) - 2011] . strtoupper(dechex(date('m'))) . date('d') . substr(time(), -5) . substr(microtime(), 2, 5) . sprintf('%02d', rand(0, 99));
+    return $orderSn;
+}
 // 应用公共文件
 function  return_json($status =1 ,$msg = '',$data = [],$page=[])
 {
