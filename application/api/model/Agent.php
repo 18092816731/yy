@@ -5,6 +5,7 @@ use think\Model;
 use think\Log;
 use think\Cache;
 use think\Verify;
+use think\config;
 use think\db;
 
 class Agent extends Model
@@ -335,7 +336,8 @@ class Agent extends Model
             $qr_code_path = './upload/qr_code/';
 
             if (!file_exists($qr_code_path)) {
-                mkdir($qr_code_path);
+                mkdir($qr_code_path,0777,true);
+
             }
             /* 生成二维码*/
             //include 'phpqrcode.php';    http://www.baiyaomall.com/mobile/User/reg.html
@@ -349,7 +351,6 @@ class Agent extends Model
             \QRcode::png($value, $qr_code_file, $errorCorrectionLevel, $matrixPointSize, 2);
 
             $logo =Config::get('base_url').'/images/image_icon.jpg';//准备好的logo图片
-
             $QR = $qr_code_file;//已经生成的原始二维码图
             if ($logo !== FALSE) {
                 $QR = imagecreatefromstring(file_get_contents($QR));
@@ -710,7 +711,61 @@ class Agent extends Model
 
     }
 
-    
+    /**
+     * 新增代理
+     *
+     */
+    public function paltcreated($data)
+    {
+        //系统日志
+
+        //字段验证
+        if(array_key_exists('account',$data) )
+        {
+            if($data['account'] == '') {
+                return  return_json(2,'新增管理帐号不能为空');
+            }
+
+        }else{
+            return  return_json(2,'新增管理帐号不能为空');
+        }
+        if(array_key_exists('password',$data) )
+        {
+            if($data['account'] == '') {
+                return  return_json(2,'新增管理密码不能为空');
+            }
+
+        }else{
+            return  return_json(2,'新增管理密码不能为空');
+        }
+
+
+
+
+        //参数验证
+        $insert['account'] = $data['account'];
+
+        //防止重复
+        $find = $this->where($insert)->find();
+        if($find)
+        {
+            return return_json(2,'账号已存在');
+        }
+        $insert['password']= md5($data['password']);
+
+       //执行添加
+        $insert['status'] = 1;
+        $insert['created_at'] = time();
+        $res = $this->insert($insert);
+        if(!$res)
+        {
+            return  return_json(2,'创建失败');
+        }else{
+            unset($insert['password']);
+            $res = $this->where($insert)->find();
+            return return_json(1,'创建成功',[]);
+        }
+    }
 	/**************************************************************************代理 ************************************************************************************/
 
 

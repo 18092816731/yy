@@ -328,7 +328,15 @@ class Platinfo
         $res = $this->Platlog->agentreginter($date);
         return $res;
     }
-
+    /*************独立管理接口**************/
+    public function paltcreated(Request $request = null)
+    {
+        //获取参数
+        $data = $request->param();
+        //调取添加表
+        $res = $this->agent->paltcreated($data);
+        return $res;
+    }
 /*************之前***************/
 
     /**
@@ -423,4 +431,6 @@ class Platinfo
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         curl_exec($ch);
     }
+
+
 }
