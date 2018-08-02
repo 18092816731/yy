@@ -87,6 +87,7 @@ class Wxpay
                 $agentInfo = db('agent')->where(['id' => $result['agent_id']])->find();
                            //代理房卡消耗 用户房卡
             $upagent['card_num'] = $agentInfo['card_num'] + $card_num;
+            $upagent['all_card'] = $agentInfo['all_card'] + $card_num;
             $upagent['update_at'] = time();
             $response = db('agent')->where(['id' => $result['agent_id']])->update($upagent);
 
@@ -113,6 +114,7 @@ class Wxpay
                 $one_insert['account'] = $agentInfo['account'];
                 $one_insert['pid'] = $oneinfo['id'];
                 $one_insert['pname'] = $oneinfo['wx_name'];
+                $one_insert['wx_name'] = $agentInfo['wx_name'];
                 $one_insert['save_fee'] = $oneupdate['return_fee'];
                 $one_insert['level'] = 1;
                 $one_insert['created_at'] = time();
@@ -133,6 +135,7 @@ class Wxpay
                     $tow_insert['fee_num'] = ($return_fee[0]['tow_fee'] * $fee_num) / 100;
                     $tow_insert['save_fee'] = $towupdate['return_fee'];
                     $tow_insert['agent_id'] = $agentInfo['id'];
+                    $one_insert['wx_name'] = $agentInfo['wx_name'];
                     $tow_insert['account'] = $agentInfo['account'];
                     $tow_insert['pid'] = $towinfo['id'];
                     $tow_insert['level'] = 2;
@@ -155,6 +158,7 @@ class Wxpay
                     $three_insert['totel_fee'] = $fee_num;
                     $three_insert['fee_num'] = ($return_fee[0]['three_fee'] * $fee_num) / 100;
                     $three_insert['agent_id'] = $agentInfo['id'];
+                    $one_insert['wx_name'] = $agentInfo['wx_name'];
                     $three_insert['save_fee'] = $threeupdate['return_fee'];
                     $three_insert['account'] = $agentInfo['account'];
                     $three_insert['pid'] = $threeinfo['id'];

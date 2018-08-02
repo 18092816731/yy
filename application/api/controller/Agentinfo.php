@@ -251,7 +251,7 @@ class Agentinfo
             $dataGame['master'] =$data['account'];
             $dataGame['time'] = time();
             $dataGame['auth'] = get_auth($dataGame);
-			          /// dump(Config::get('game_url_name'));exit;
+            //dump(Config::get('game_url_name'));exit;
             $url =Config::get('game_url_name')."?userId=".$dataGame['userId']."&master=".$dataGame['master']."&reqIp=".$dataGame['reqIp']."&time=".$dataGame['time']."&auth=".$dataGame['auth'];
 
         }else{

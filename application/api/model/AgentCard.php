@@ -54,7 +54,7 @@ class AgentCard extends Model
         $page['totle'] = $totle;//总条数
         $page['tpage'] = $pageNum;//总页数
 
-        $sql =  "select * from (select id,card_num,wx_name,return_num as all_card,status,created_at,return_fee from hand_agent ".$where."  order by created_at desc )   agentinfo limit ".$start.",".$limit;
+        $sql =  "select * from (select id,card_num,wx_name,all_card,status,created_at,return_fee from hand_agent ".$where."  order by created_at desc )   agentinfo limit ".$start.",".$limit;
 		
 
 
