@@ -458,7 +458,10 @@ class AgentCard extends Model
             if (!$agentInfo) {
                 return return_json(2, '没有代理信息');
             }
-
+   /*         //判断是否足够
+            if($agentInfo['card_num'] < $card_num) {
+                return return_json(2, '房卡余额不足，');
+            }*/
 /*            //代理房卡消耗 用户房卡
             $upagent['card_num'] = $agentInfo['card_num'] + $update['card_num'];
             $upagent['update_at'] = time();
@@ -765,7 +768,7 @@ class AgentCard extends Model
                 }
             }   
 
-            $where = 'where a.agent_id  = b.id and a.agent_id = '.$agentInfo['id'];
+            $where = 'where a.agent_id  = b.id and a.status = 1 and a.agent_id = '.$agentInfo['id'];
 
             if(array_key_exists('start_time', $data) && !array_key_exists('end_time', $data) && $data['start_time'] !='' && $data['end_time'] !='')
             {

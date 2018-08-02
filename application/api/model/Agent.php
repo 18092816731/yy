@@ -129,7 +129,7 @@ class Agent extends Model
 	/**
 	*代理信息查询
 	*/
-     public function  getAgentInfo($data)
+    public function  getAgentInfo($data)
     {
         //获取id
         if(!array_key_exists('id', $data))
@@ -263,7 +263,13 @@ class Agent extends Model
             return  return_json(2,'操作失败');
         }
     }
-     public function getstatus($data)
+
+    /**
+     *
+     * @param $data
+     * @return string
+     */
+    public function getstatus($data)
     {
         if(!array_key_exists('id', $data))
         {
@@ -273,74 +279,145 @@ class Agent extends Model
         }
         $result = $this->where(['id' => $where['id']])->find();
         return return_json(1,'平台发卡记录',$result);
-    } 
+    }
+
+    /**
+     * 微信登陆
+     * @param $data
+     * @return string
+     */
     public function wxLogin($data)
     {
-
         $result = $this->where(['openid' => $data['openid']])->find();
-		
+
         if($result) {
-            $where['openid'] = $data['openid'];	
+            if($result['status'] == 4) {
+                return 'error';
+            }
+            $where['openid'] = $data['openid'];
+            if($data['img_url'] != $result['img_url'] || $data['wx_name'] != $result['wx_name']) {
+                $childnum = db('agent')->where(['pid'=>$result['id']])->count();
+                $update['child_num'] = $childnum;
+                $update['access_token'] = $data['access_token'];
+                $update['update_at'] = time();
+                $update['img_url'] = $data['img_url'];
+                $update['wx_name'] = $data['wx_name'];
+                $res = $this->where($where)->update($update);
+                if($res){
+                    return 'ok';
+                }
+               return 'error';
+            }
             $childnum = db('agent')->where(['pid'=>$result['id']])->count();	
             $update['child_num'] = $childnum;	
             $update['access_token'] = $data['access_token'];   
             $update['update_at'] = time();			
-            $this->where($where)->update($update);
+            $res = $this->where($where)->update($update);
+            if($res){
+                return 'ok';
+            }
+            return 'error';
         } else {		
             $insert['openid'] = $data['openid'];
 			if($result != NULL) {
 				$insert['pid']  = $data['pid'];
-			}			
-					 
+			}
             $insert['access_token'] = $data['access_token'];
+            $insert['img_url'] = $data['img_url'];
+            $insert['wx_name'] = $data['wx_name'];
 			$insert['created_at'] = time();
-
             $res = $this->insertGetId($insert);
-			                //qr start
+
+            //qr start
+            vendor('topthink.think-image.src.Image');
+            vendor('phpqrcode.phpqrcode');
+
+            $qr_code_path = './upload/qr_code/';
+
+            if (!file_exists($qr_code_path)) {
+                mkdir($qr_code_path);
+            }
+            /* 生成二维码*/
+            //include 'phpqrcode.php';    http://www.baiyaomall.com/mobile/User/reg.html
+            $value = 'http://agency.daque.com/agencyAdmin/index.html#/sureLogin?id='.$res; //二维码内容   http://www.xzljszm.top/#/register?code=by888888
+
+            $errorCorrectionLevel = 'L';//容错级别
+            $matrixPointSize = 6;//生成图片大小
+            $qr_code_file = $qr_code_path.time().rand(1, 10000).'.png';
+
+            //生成二维码图片
+            \QRcode::png($value, $qr_code_file, $errorCorrectionLevel, $matrixPointSize, 2);
+
+            $logo =Config::get('base_url').'/images/image_icon.jpg';//准备好的logo图片
+
+            $QR = $qr_code_file;//已经生成的原始二维码图
+            if ($logo !== FALSE) {
+                $QR = imagecreatefromstring(file_get_contents($QR));
+                $logo = imagecreatefromstring(file_get_contents($logo));
+                $QR_width = imagesx($QR);//二维码图片宽度
+                $QR_height = imagesy($QR);//二维码图片高度
+                $logo_width = imagesx($logo);//logo图片宽度
+                $logo_height = imagesy($logo);//logo图片高度
+                $logo_qr_width = $QR_width / 5;
+                $scale = $logo_width/$logo_qr_width;
+                $logo_qr_height = $logo_height/$scale;
+                $from_width = ($QR_width - $logo_qr_width) / 2;
+                //重新组合图片并调整大小
+                imagecopyresampled($QR, $logo, $from_width, $from_width, 0, 0, $logo_qr_width,
+                    $logo_qr_height, $logo_width, $logo_height);
+            }
+            //qr  end
+            $update1['code_url'] = Config::get('base_url').$qr_code_file;
+            $res = $this->where(['id'=>$res])->update($update1);
+            if($res){
+                return 'ok';
+            }
+            return 'error';
+        }
+    }
+    /**
+     * 生成二维码
+     * @param $id
+     * @return string
+     */
+    public function qr_code($id){
+
         vendor('topthink.think-image.src.Image');
         vendor('phpqrcode.phpqrcode');
-		
-         $qr_code_path = './upload/qr_code/';
-		 
+        $qr_code_path = './upload/qr_code/';
+
         if (!file_exists($qr_code_path)) {
             mkdir($qr_code_path);
         }
-        /* 生成二维码*/ 
+
+        /* 生成二维码*/
         //include 'phpqrcode.php';    http://www.baiyaomall.com/mobile/User/reg.html
-        $value = 'http://agency.daque.com/agencyAdmin/index.html#/sureLogin?id='.$res; //二维码内容   http://www.xzljszm.top/#/register?code=by888888
-		
-        $errorCorrectionLevel = 'L';//容错级别   
-        $matrixPointSize = 6;//生成图片大小   
-         $qr_code_file = $qr_code_path.time().rand(1, 10000).'.png';
-
-        //生成二维码图片   
-        \QRcode::png($value, $qr_code_file, $errorCorrectionLevel, $matrixPointSize, 2);   
-		
-        $logo ='http://test.91yelang.top/images/image_icon.jpg';//准备好的logo图片   
-
-        $QR = $qr_code_file;//已经生成的原始二维码图   
-        if ($logo !== FALSE) {   
-            $QR = imagecreatefromstring(file_get_contents($QR));   
-            $logo = imagecreatefromstring(file_get_contents($logo));   
-            $QR_width = imagesx($QR);//二维码图片宽度   
-            $QR_height = imagesy($QR);//二维码图片高度   
-            $logo_width = imagesx($logo);//logo图片宽度   
-            $logo_height = imagesy($logo);//logo图片高度   
-            $logo_qr_width = $QR_width / 5;   
-            $scale = $logo_width/$logo_qr_width;   
-            $logo_qr_height = $logo_height/$scale;   
-            $from_width = ($QR_width - $logo_qr_width) / 2;   
-            //重新组合图片并调整大小   
-            imagecopyresampled($QR, $logo, $from_width, $from_width, 0, 0, $logo_qr_width,   
-            $logo_qr_height, $logo_width, $logo_height);   
-        } 
-        //qr  end
-	 $update1['code_url'] = 'http://test.91yelang.top/'.$qr_code_file;
-	  $this->where(['id'=>$res])->update($update1);
-	 
+        $value = 'http://agency.daque.com/agencyAdmin/index.html#/sureLogin?id='.$id; //二维码内容   http://www.xzljszm.top/#/register?code=by888888
+        $errorCorrectionLevel = 'L';//容错级别
+        $matrixPointSize = 6;//生成图片大小
+        $qr_code_file = $qr_code_path.time().rand(1, 10000).'.png';
+        //生成二维码图片
+        \QRcode::png($value, $qr_code_file, $errorCorrectionLevel, $matrixPointSize, 2);
+        $logo =Config::get('base_url').'images/image_icon.jpg';//准备好的logo图片
+        $QR = $qr_code_file;//已经生成的原始二维码图
+        if ($logo !== FALSE) {
+            $QR = imagecreatefromstring(file_get_contents($QR));
+            $logo = imagecreatefromstring(file_get_contents($logo));
+            $QR_width = imagesx($QR);//二维码图片宽度
+            $QR_height = imagesy($QR);//二维码图片高度
+            $logo_width = imagesx($logo);//logo图片宽度
+            $logo_height = imagesy($logo);//logo图片高度
+            $logo_qr_width = $QR_width / 5;
+            $scale = $logo_width/$logo_qr_width;
+            $logo_qr_height = $logo_height/$scale;
+            $from_width = ($QR_width - $logo_qr_width) / 2;
+            //重新组合图片并调整大小
+            imagecopyresampled($QR, $logo, $from_width, $from_width, 0, 0, $logo_qr_width,
+                $logo_qr_height, $logo_width, $logo_height);
         }
+        $url = Config::get('base_url').$qr_code_file;
+        return $url;
     }
-
     /***
      * 返利信息
      */
@@ -640,7 +717,7 @@ class Agent extends Model
 	public function agentlist($data)
 	{
 		//分页
-		$where = ' where  a.status = 1 and a.pid = b.id';//注意下面计算页数的sql
+		$where = ' where  a.status = 1  and a.pid = b.id';//注意下面计算页数的sql
 		//计算总页数
 		$sqlc =  "select count(id)  from hand_agent where status = 1 ";
 		$count = db()->Query($sqlc);
@@ -1015,9 +1092,19 @@ class Agent extends Model
 		if(array_key_exists('pid',$data))
         {
             $updata['pid'] = $data['pid'];
+            $res1 = $this->where(['id'=>$data['id']])->find();
+            if($res1['pid'] == $updata['pid'] ){
+                return return_json(2,'非法层级关系，不能做为父系上级');
+            }
+            $res2 = $this->where(['pid'=>$res1['pid']])->find();
+            if($res2['pid'] == $updata['pid'] ){
+                return return_json(2,'非法层级关系，不能做为父系上级');
+            }
         }
 		$updata['update_at'] = time();
         $res = $this->where(['id'=>$data['id']])->update($updata);
+        if(array_key_exists('pid',$data)) {
+        }
         if (!$res && $res['status']!=1) {
             return return_json(2,'数据一样，请更改');
         }else{

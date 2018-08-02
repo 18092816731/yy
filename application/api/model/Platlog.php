@@ -115,7 +115,7 @@ class Platlog extends Model
     public function buycardlogs($data)
     {
         //获取查询sql
-        $where = 'where  a.agent_id = b.id';
+        $where = 'where  a.agent_id = b.id and a.status = 1';
         if(array_key_exists('account', $data)&& $data['account'] !=  '')
         {
             $agentInfo = db('agent')->where(['account'=>$data['account']])->find();
@@ -169,7 +169,7 @@ class Platlog extends Model
         $page['totle'] = $totle;//总条数
         $page['tpage'] = $pageNum;//总页数
 
-        $sql =  "select * from (select a.fee_num,a.agent_id ,a.plat_id,a.card_num,b.wx_name,a.created_at,a.agent_account,b.account as  agent_name from hand_plat_card as a,hand_agent as b ".$where." order by a.created_at desc) agentinfo limit ".$start.",".$limit;
+        $sql =  "select * from (select a.fee_num,a.order_code, a.agent_id ,a.plat_id,a.card_num,b.wx_name,a.created_at,a.agent_account,b.account as  agent_name from hand_plat_card as a,hand_agent as b ".$where." order by a.created_at desc) agentinfo limit ".$start.",".$limit;
 
 
         $res = db()->Query($sql);
@@ -191,7 +191,7 @@ class Platlog extends Model
     public function sendcardlogs($data)
     {
 
-        $where = ' where a.agent_id  = b.id ';
+        $where = ' where a.agent_id  = b.id  ';
         if(array_key_exists('account', $data)&& $data['account'] !=  '' )
         {
             $agentInfo = db('agent')->where(['account'=>$data['account']])->find();
@@ -561,9 +561,9 @@ class Platlog extends Model
     {
         if(array_key_exists('account',$data) && $data['account'] !='')
         {
-            $where = 'where  status = 1 and account like  "%'.$data["account"].'%" and where pid > 0';
+            $where = 'where status < 4 and  account like  "%'.$data["account"].'%" and where pid > 0';
         }else{
-            $where = 'where status = 1 and pid > 0';
+            $where = 'where status < 4 and pid > 0';
         }
 		if(array_key_exists('id',$data) && $data['id'] !='')
         {
