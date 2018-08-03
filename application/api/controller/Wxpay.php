@@ -85,17 +85,21 @@ class Wxpay
                 $card_num = $feeInfo['card_num'];//房卡数目
                 $fee_num = $feeInfo['fee_num'];
                 $agentInfo = db('agent')->where(['id' => $result['agent_id']])->find();
+
+                //获取获利配置
+                $return_fee = db('refeeset')->select();
                            //代理房卡消耗 用户房卡
             $upagent['card_num'] = $agentInfo['card_num'] + $card_num;
             $upagent['all_card'] = $agentInfo['all_card'] + $card_num;
+            $upagent['all_fee'] = $agentInfo['all_fee'] + $fee_num;
+            $upagent['all_return_fee'] = $agentInfo['all_return_fee'] + ($return_fee[0]['one_fee'] * $fee_num) / 100;
             $upagent['update_at'] = time();
             $response = db('agent')->where(['id' => $result['agent_id']])->update($upagent);
 
             if (!$response) {
                 return return_json(2, '房卡数未能发放');
             }
-            //获取获利配置
-            $return_fee = db('refeeset')->select();
+
             //给第一级分利
 
 
