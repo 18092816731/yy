@@ -10,6 +10,7 @@
 // +----------------------------------------------------------------------
 
 // [ 应用入口文件 ]
+///echo  $_GET['echostr'];exit;
 header('Access-Control-Allow-Origin:*');
 // 响应类型
 header('Access-Control-Allow-Methods:*');

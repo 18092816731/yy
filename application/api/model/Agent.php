@@ -38,7 +38,7 @@ class Agent extends Model
     
         //查询数据
         $response = $this->where($find)->find();
-         
+         $response['wx_name'] = base64_decode($response['wx_name']);
         if(!$response) {
             return return_json(2,'账号或者密码有误,请重试');
         }
@@ -89,12 +89,7 @@ class Agent extends Model
         } else {
             $where['id'] = $data['id'];
         }
-        if(!array_key_exists('wx_name', $data))
-        {
-            return  return_json(2,'请输入正确的微信号');
-        } else {
-            $insert['wx_name'] = $data['wx_name'];
-        }
+   
         if(!array_key_exists('phone', $data))
         {
             return  return_json(2,'电话不能为空');
@@ -170,6 +165,7 @@ class Agent extends Model
 		}else{
 			$res['child_count'] = $count;
 		}
+		$res['wx_name'] = base64_decode($res['wx_name']);
 		return return_json(1,'平台发卡记录',$res,[]);
     }
     
@@ -210,6 +206,10 @@ class Agent extends Model
         $sql =  "select a.id,a.wx_name,a.rname,a.phone,a.created_at,b.account as p_account from  hand_agent as a , hand_agent b ".$where."  limit ".$start.",".$limit;
     
         $res = db()->Query($sql);
+		
+		foreach($res as $key => $val) {
+			$res[$key]['wx_name'] = base64_decode($val['wx_name']);
+		}
         if(!$res)
         {
             return return_json(1,'暂无信息 ');
@@ -296,13 +296,13 @@ class Agent extends Model
                 return 'error';
             }
             $where['openid'] = $data['openid'];
-            if($data['img_url'] != $result['img_url'] || $data['wx_name'] != $result['wx_name']) {
+            if($data['img_url'] != $result['img_url'] || base64_encode($data['wx_name']) != $result['wx_name']) {
                 $childnum = db('agent')->where(['pid'=>$result['id']])->count();
                 $update['child_num'] = $childnum;
                 $update['access_token'] = $data['access_token'];
                 $update['update_at'] = time();
                 $update['img_url'] = $data['img_url'];
-                $update['wx_name'] = $data['wx_name'];
+                $update['wx_name'] = base64_encode($data['wx_name']);
                 $res = $this->where($where)->update($update);
                 if($res){
                     return 'ok';
@@ -325,7 +325,7 @@ class Agent extends Model
 			}
             $insert['access_token'] = $data['access_token'];
             $insert['img_url'] = $data['img_url'];
-            $insert['wx_name'] = $data['wx_name'];
+            $insert['wx_name'] = base64_encode($data['wx_name']);
 			$insert['created_at'] = time();
             $res = $this->insertGetId($insert);
 
@@ -795,12 +795,15 @@ class Agent extends Model
 		$sql =  "select a.id,a.account,a.rname,a.pid,a.phone,a.card_num,a.child_num,a.rebate,a.created_at,b.account as p_account from  hand_agent as a , hand_agent as b ".$where."  limit ".$start.",".$limit;
 		//获取信息列表
 		$res = db()->Query($sql);
+		
+		
 		if(!$res)
 		{
 			return return_json(1,'暂无信息 ');
 		}
 		//获取列表相关信息
 		foreach($res as $key => $val) {
+			$res[$key]['wx_name'] = base64_decode($val['wx_name']);
 			$where1['agent_id'] = $val['id'];
 			$res = db('agent_card')->where($where1)->order('created_at desc')->limit(1)->find();//最后进卡
 			$res = db('agent_card')->where($where1)->order('created_at desc')->limit(1)->find();//最后发卡
@@ -915,6 +918,9 @@ class Agent extends Model
         $sql =  "select * from  hand_agent ".$where."  limit ".$start.",".$limit;
   
         $res = db()->Query($sql);
+		foreach($res as $key =>$val) {
+			$res[$key]['wx_name'] = $val['wx_name'];
+		}
         if(!$res)
         {
             return return_json(1,'暂无信息 ');
@@ -1204,6 +1210,7 @@ class Agent extends Model
         if (!$result && $result['status']!=1) {
             return return_json(2,'代理账号异常已被禁用');
         }
+		$result['wx_name'] = base64_decode($result['wx_name']);
         return return_json(1,'更新成功',$result);
     }
     /**

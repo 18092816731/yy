@@ -59,7 +59,9 @@ class AgentCard extends Model
 
 
         $res = db()->Query($sql);
-		
+		foreach($res as $key => $val) {
+			$res[$key]['wx_name'] = base64_decode($val['wx_name']);
+		}
 		
         //判断是否为空
         if(!$res)

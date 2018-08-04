@@ -173,6 +173,9 @@ class Platlog extends Model
 
 
         $res = db()->Query($sql);
+			foreach($res as $key => $val) {
+			$res[$key]['wx_name'] = base64_decode($val['wx_name']);
+		}
 
         //判断是否为空
         if(!$res)
@@ -250,6 +253,7 @@ class Platlog extends Model
         $sql =  "select * from (select a.agent_id,a.card_num,a.created_at,a.user_account,a.wx_name,b.account  as  agent_name from hand_agent_card as a,hand_agent as b ".$where." order by a.created_at desc) agentinfo limit ".$start.",".$limit;
 
         $res = db()->Query($sql);
+
         //判断是否为空
         if(!$res)
         {
@@ -548,6 +552,9 @@ class Platlog extends Model
 
 
         $res = db()->Query($sql);
+			foreach($res as $key => $val) {
+			$res[$key]['wx_name'] = base64_decode($val['wx_name']);
+		}
 
         //判断是否为空
         if(!$res)
@@ -611,6 +618,8 @@ class Platlog extends Model
         //开始数$start $limie
         $sql =  "select * from  hand_agent ".$where." limit ".$start.",".$limit;
         $res = db()->Query($sql);
+		
+
         foreach($res as $key => $vel) {
             $ress = db('agent_card')->where(['agent_id'=>$vel['id']])->order('created_at desc')->limit(1)->select();
             if(!$ress) {
@@ -625,7 +634,11 @@ class Platlog extends Model
             }else{
                 $res[$key]['last_get_card'] = $resss[0]['created_at'];
             }
+			if($res[$key]['wx_name'] != ''){
+				$res[$key]['wx_name'] = base64_decode($vel['wx_name']);
+			}
         }
+
         if(!$res)
         {
             return return_json(1,'暂无信息 ');
@@ -1251,6 +1264,9 @@ class Platlog extends Model
             $sql =  "select * from (select a.agent_id,a.card_num,a.created_at,a.user_account,a.wx_name,b.account  as  agent_name from hand_agent_card as a,hand_agent as b ".$where." order by a.created_at desc) agentinfo limit ".$start.",".$limit;
             
             $res = db()->Query($sql);
+				foreach($res as $key => $val) {
+			$res[$key]['wx_name'] = base64_decode($val['wx_name']);
+		}
         //判断是否为空
         if(!$res)
         {
@@ -1767,6 +1783,9 @@ class Platlog extends Model
             $sql =  "select * from (select a.agent_id,a.card_num,a.created_at,a.user_account,a.wx_name,b.account  as  agent_name from hand_agent_card as a,hand_agent as b ".$where." order by a.created_at desc) agentinfo limit ".$start.",".$limit;
             }
             $res = db()->Query($sql);
+				foreach($res as $key => $val) {
+			$res[$key]['wx_name'] = base64_decode($val['wx_name']);
+		}
         //判断是否为空
         if(!$res)
         {
@@ -2007,6 +2026,9 @@ class Platlog extends Model
     	$sql =  "select * from (select a.agent_id,a.card_num,a.created_at,a.user_account,a.wx_name,b.account  as  agent_name from hand_agent_card as a,hand_agent as b ".$where." order by a.created_at desc) agentinfo limit ".$start.",".$limit;
 	    
 	    $res = db()->Query($sql);
+			foreach($res as $key => $val) {
+			$res[$key]['wx_name'] = base64_decode($val['wx_name']);
+		}
 	    //判断是否为空
 	    if(!$res)
 	    {
